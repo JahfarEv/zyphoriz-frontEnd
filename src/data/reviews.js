@@ -1,0 +1,42 @@
+export const reviews = [
+  {
+    id: 'rev-1',
+    businessId: 'celltech-mobiles',
+    author: 'Rahul Menon',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: '2 days ago',
+    comment: 'Got my iPhone screen replaced in less than 45 minutes! Excellent customer service and original display quality. Highly recommended for any mobile repairs.',
+    verifiedPurchase: true,
+  },
+  {
+    id: 'rev-2',
+    businessId: 'celltech-mobiles',
+    author: 'Fathima Sahla',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: '1 week ago',
+    comment: 'Best phone shop in Kottakkal. They offered a great trade-in deal on my old phone and helped transfer all my data seamlessly.',
+    verifiedPurchase: true,
+  },
+  {
+    id: 'rev-3',
+    businessId: 'celltech-mobiles',
+    author: 'Anand Kumar',
+    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80',
+    rating: 4,
+    date: '2 weeks ago',
+    comment: 'Polite staff and genuine accessories. Prices are competitive compared to online stores.',
+    verifiedPurchase: false,
+  },
+  {
+    id: 'rev-4',
+    businessId: 'azure-bistro',
+    author: 'Dr. Priya V',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: '3 days ago',
+    comment: 'Amazing ambiance and top-notch pasta! The staff were very warm and attentive.',
+    verifiedPurchase: true,
+  }
+];

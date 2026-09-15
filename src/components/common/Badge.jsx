@@ -5,7 +5,7 @@ export const Badge = ({ variant = 'verified', children, className = '' }) => {
   const styles = {
     verified: 'bg-secondary/90 text-on-secondary backdrop-blur-sm',
     trending: 'bg-tertiary-amber text-white backdrop-blur-sm',
-    success: 'bg-green-100 text-green-800 border border-green-200',
+    success: 'bg-success-container text-success border border-success/30',
     info: 'bg-primary/10 text-primary border border-primary/20',
     neutral: 'bg-surface-container text-on-surface-variant border border-outline-variant/40',
   };

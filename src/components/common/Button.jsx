@@ -18,7 +18,7 @@ export const Button = ({
     secondary: 'bg-secondary text-on-secondary hover:bg-secondary-teal hover:shadow-[0_10px_15px_-3px_rgb(0,0,0,0.08)]',
     outline: 'border border-outline-variant text-on-surface hover:bg-surface-container hover:border-primary/50',
     ghost: 'bg-transparent text-primary hover:bg-primary/10',
-    danger: 'bg-error text-on-error hover:bg-red-700',
+    danger: 'bg-error text-on-error hover:bg-error/90',
   };
 
   const sizes = {

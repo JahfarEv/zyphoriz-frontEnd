@@ -5,9 +5,9 @@ import { useRegistration } from '../../context/RegistrationContext';
 
 export const PaymentSuccess = () => {
   const { formData } = useRegistration();
-  const txnId = `NXR-${Math.floor(10000000 + Math.random() * 90000000)}`;
+  const txnId = `ZYP-${Math.floor(10000000 + Math.random() * 90000000)}`;
   const slug = formData.slug || 'your-business';
-  const businessUrl = `nexora.in/${slug}`;
+  const businessUrl = `zyphoriz.in/${slug}`;
 
   const copyUrl = () => {
     navigator.clipboard?.writeText(`https://${businessUrl}`);
@@ -17,19 +17,19 @@ export const PaymentSuccess = () => {
     <main className="w-full px-4 md:px-6 py-12 text-center">
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 md:p-10 shadow-md space-y-6">
         {/* Success Icon */}
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+        <div className="w-20 h-20 bg-success-container text-success rounded-full flex items-center justify-center mx-auto shadow-inner">
           <CheckCircle2 className="w-11 h-11" />
         </div>
 
         <div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold mb-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-success-container text-success rounded-full text-xs font-semibold mb-3">
             <ShieldCheck className="w-3.5 h-3.5" /> Payment Successful
           </span>
           <h1 className="font-headline text-3xl font-bold text-on-surface">
             You're Live! 🎉
           </h1>
           <p className="font-sans text-sm text-on-surface-variant mt-2 max-w-sm mx-auto leading-relaxed">
-            <span className="font-bold text-on-surface">{formData.name || 'Your business'}</span> is now listed on Nexora and discoverable by thousands of local customers.
+            <span className="font-bold text-on-surface">{formData.name || 'Your business'}</span> is now listed on zyphoriz and discoverable by thousands of local customers.
           </p>
         </div>
 

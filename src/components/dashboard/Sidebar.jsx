@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, Star, BarChart3, Settings, ExternalLink, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Store, Users, BarChart3, Settings, ExternalLink, ArrowLeft } from 'lucide-react';
 
 export const Sidebar = ({ className = '' }) => {
   const location = useLocation();
@@ -9,7 +9,6 @@ export const Sidebar = ({ className = '' }) => {
     { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Business Profile', path: '/business/celltech-mobiles', icon: Store, external: true },
     { label: 'Leads & Inquiries', path: '/dashboard?tab=leads', icon: Users },
-    { label: 'Reviews', path: '/dashboard?tab=reviews', icon: Star },
     { label: 'Analytics', path: '/dashboard?tab=analytics', icon: BarChart3 },
     { label: 'Settings', path: '/dashboard?tab=settings', icon: Settings },
   ];

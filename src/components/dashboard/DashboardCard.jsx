@@ -21,7 +21,7 @@ export const DashboardCard = ({ title, value, change, changeType = 'positive', i
           <div className="flex items-center gap-1.5 text-xs">
             <span
               className={`font-semibold ${
-                changeType === 'positive' ? 'text-green-600' : 'text-error'
+                changeType === 'positive' ? 'text-success' : 'text-error'
               }`}
             >
               {change}

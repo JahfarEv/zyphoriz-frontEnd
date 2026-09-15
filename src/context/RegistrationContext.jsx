@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const defaultOpeningHours = [
   { day: 'Monday',    open: true, from: '09:00', to: '18:00' },
@@ -23,6 +23,10 @@ const emptyState = {
   location: '',
   description: '',
   website: '',
+  instagram: '',
+  facebook: '',
+  youtube: '',
+  video: '',
   referralCode: '',
   selectedPlan: 'standard',
   planPrice: '₹499/yr',
@@ -34,18 +38,8 @@ const emptyState = {
 const RegistrationContext = createContext();
 
 export const RegistrationProvider = ({ children }) => {
-  const [formData, setFormData] = useState(() => {
-    try {
-      return { ...emptyState, ...JSON.parse(localStorage.getItem('nexora-registration') || '{}') };
-    } catch {
-      return emptyState;
-    }
-  });
+  const [formData, setFormData] = useState(emptyState);
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('nexora-registration', JSON.stringify(formData));
-  }, [formData]);
 
   const updateFormData = (fields) => {
     setFormData((prev) => ({ ...prev, ...fields }));
@@ -54,7 +48,6 @@ export const RegistrationProvider = ({ children }) => {
   const resetForm = () => {
     setFormData(emptyState);
     setRegistrationCompleted(false);
-    localStorage.removeItem('nexora-registration');
   };
 
   return (

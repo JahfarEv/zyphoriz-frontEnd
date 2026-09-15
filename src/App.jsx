@@ -11,16 +11,16 @@ import { BusinessProfile } from './pages/BusinessProfile/BusinessProfile';
 import { PaymentCheckout } from './pages/Payment/PaymentCheckout';
 import { PaymentSuccess } from './pages/Payment/PaymentSuccess';
 import { NotFound } from './pages/NotFound/NotFound';
-import { BusinessDashboard } from './pages/BusinessDashboard/BusinessDashboard';
 import { SearchResults } from './pages/SearchResults/SearchResults';
 import { Auth } from './pages/Auth/Auth';
 import { UserDashboard } from './pages/UserDashboard/UserDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const RequireAuth = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
+  if (loading) return <div className="py-20 text-center text-on-surface-variant">Checking your session...</div>;
   if (!user) {
     return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
@@ -29,9 +29,13 @@ const RequireAuth = ({ children }) => {
 };
 
 const AppLayout = () => {
+  const location = useLocation();
+  const isBusinessProfile = /^\/[^/]+$/.test(location.pathname)
+    && !['/auth', '/create', '/dashboard', '/search'].includes(location.pathname);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-background selection:bg-primary-container selection:text-on-primary">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-[linear-gradient(90deg,#16292c_30%,#2f756d_100%,#b94630_140%)] text-on-background selection:bg-primary-container selection:text-on-primary">
+      {!isBusinessProfile && <Navbar />}
 
       <div className="flex-1">
         <Routes>
@@ -48,8 +52,8 @@ const AppLayout = () => {
         </Routes>
       </div>
 
-      <Footer />
-      <MobileNavigation />
+      {!isBusinessProfile && <Footer />}
+      {!isBusinessProfile && <MobileNavigation />}
     </div>
   );
 };

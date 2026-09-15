@@ -1,12 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, Grid, List, MapPin, Search } from 'lucide-react';
 import { BusinessGrid } from '../../components/business/BusinessGrid';
 import { Button } from '../../components/common/Button';
 import { Breadcrumb } from '../../components/common/Breadcrumb';
 
-import { categories } from '../../data/categories';
-import { getAllBusinesses } from '../../data/mockBusinesses';
+import { api } from '../../lib/api';
 
 export const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,23 +20,26 @@ export const SearchResults = () => {
   const [topRatedOnly, setTopRatedOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const businesses = getAllBusinesses();
+  const [businesses, setBusinesses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filteredBusinesses = useMemo(() => {
-    return businesses.filter((b) => {
-      const matchesQuery =
-        !searchTerm ||
-        b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.description.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    api.categories.list().then((data) => setCategories(data.categories || [])).catch(() => {});
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (locationTerm) params.set('city', locationTerm);
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (verifiedOnly) params.set('verified', 'true');
+    if (topRatedOnly) params.set('topRated', 'true');
+    api.businesses.list(params.toString())
+      .then((data) => setBusinesses(data.businesses || []))
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false));
+  }, [searchTerm, locationTerm, selectedCategory, verifiedOnly, topRatedOnly]);
 
-      const matchesCat = !selectedCategory || b.categoryId === selectedCategory;
-      const matchesVerified = !verifiedOnly || b.verified;
-      const matchesTop = !topRatedOnly || b.rating >= 4.8;
-
-      return matchesQuery && matchesCat && matchesVerified && matchesTop;
-    });
-  }, [searchTerm, selectedCategory, verifiedOnly, topRatedOnly, businesses]);
+  const filteredBusinesses = businesses;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -180,7 +182,7 @@ export const SearchResults = () => {
           {/* Toolbar */}
           <div className="flex justify-between items-center mb-6 pb-3 border-b border-outline-variant/20">
             <span className="font-sans text-xs text-on-surface-variant">
-              Showing {filteredBusinesses.length} results
+              {loading ? 'Loading businesses...' : `Showing ${filteredBusinesses.length} results`}
             </span>
             <div className="flex items-center gap-2">
               <span className="font-sans text-xs text-outline hidden sm:inline">View:</span>
@@ -205,6 +207,7 @@ export const SearchResults = () => {
             </div>
           </div>
 
+          {error && <p className="mb-4 rounded-xl bg-error-container px-4 py-3 text-sm text-error">{error}</p>}
           <BusinessGrid
             businesses={filteredBusinesses}
             layout={layout}

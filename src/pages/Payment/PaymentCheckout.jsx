@@ -14,33 +14,43 @@ import {
 } from 'lucide-react';
 import { useRegistration } from '../../context/RegistrationContext';
 
-import { saveMockBusiness } from '../../data/mockBusinesses';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 
 export const PaymentCheckout = () => {
   const navigate = useNavigate();
   const { formData } = useRegistration();
-  const { user, awardReferralCommission } = useAuth();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [paying, setPaying] = useState(false);
-  const [upiId, setUpiId] = useState('');
+
+  const loadRazorpay = () => new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Unable to load Razorpay Checkout'));
+    document.body.appendChild(script);
+  });
 
   const handlePay = async (e) => {
     e.preventDefault();
     setPaying(true);
     try {
+      await loadRazorpay();
       const businessPayload = {
-        ownerId: user.id,
-        ownerReferralCode: user.referralCode,
         referralCode: formData.referralCode || '',
         name: formData.name,
-        slug: formData.slug,
         category: formData.categoryName,
         categoryId: formData.category,
         phone: formData.phone,
         whatsapp: formData.whatsapp,
         email: formData.email,
         website: formData.website,
+        instagram: formData.instagram,
+        facebook: formData.facebook,
+        youtube: formData.youtube,
+        video: formData.video,
         address: formData.address,
         city: formData.city,
         location: formData.address ? `${formData.address}, ${formData.city}` : formData.city,
@@ -52,24 +62,48 @@ export const PaymentCheckout = () => {
             day: hour.day,
             time: `${hour.from} - ${hour.to}`,
           })),
-        image: formData.bannerImage,
-        coverImage: formData.bannerImage,
+        image: typeof formData.bannerImage === 'string' && !formData.bannerImage.startsWith('blob:') ? formData.bannerImage : '',
         gallery: formData.galleryImages || [],
-        selectedPlan: formData.selectedPlan || 'standard',
-        planPrice: formData.planPrice || '₹499/yr',
-        verified: true,
-        rating: 5.0,
-        reviewCount: 0,
-        createdAt: new Date().toISOString()
       };
+      const payload = new FormData();
+      Object.entries(businessPayload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          payload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
+        }
+      });
+      if (formData.bannerFile) payload.append('banner', formData.bannerFile);
+      (formData.galleryFiles || []).forEach((file) => payload.append('gallery', file));
+      const { business } = await api.businesses.create(payload);
+      const { order, keyId, currency } = await api.payments.createOrder({ businessId: business._id });
 
-      saveMockBusiness(businessPayload);
-      awardReferralCommission(formData.referralCode, user.id);
-      
+      await new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: keyId,
+          amount: order.amount,
+          currency,
+          name: 'zyphoriz',
+          description: 'Standard business listing',
+          order_id: order.id,
+          prefill: { name: user?.name, email: user?.email, contact: user?.mobile },
+          notes: { businessId: business._id },
+          theme: { color: '#0f766e' },
+          handler: async (response) => {
+            try {
+              await api.payments.checkout({ businessId: business._id, method: paymentMethod, ...response });
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          },
+          modal: { ondismiss: () => reject(new Error('Payment was cancelled')) },
+        });
+        razorpay.on('payment.failed', (response) => reject(new Error(response.error?.description || 'Payment failed')));
+        razorpay.open();
+      });
       navigate('/payment/success');
     } catch (err) {
       console.error(err);
-      alert('Error processing payment or saving business');
+      alert(err.message || 'Error processing payment or saving business');
     } finally {
       setPaying(false);
     }
@@ -108,18 +142,7 @@ export const PaymentCheckout = () => {
               <Smartphone className="w-5 h-5 text-primary" />
               <span className="font-sans font-semibold text-sm text-on-surface">UPI / PhonePe / GPay / Paytm</span>
             </div>
-            {paymentMethod === 'upi' && (
-              <div className="pl-8">
-                <input
-                  type="text"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  placeholder="Enter UPI ID (e.g. name@upi)"
-                  className="w-full bg-background border border-outline-variant focus:border-primary rounded-xl px-4 py-3 font-sans text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-                <p className="text-xs text-outline mt-2">Or use any UPI app to scan QR at checkout.</p>
-              </div>
-            )}
+            {paymentMethod === 'upi' && <p className="pl-8 text-xs text-outline">UPI details are entered securely in Razorpay Checkout.</p>}
           </div>
 
           {/* Card Option */}
@@ -138,34 +161,7 @@ export const PaymentCheckout = () => {
               <CreditCard className="w-5 h-5 text-primary" />
               <span className="font-sans font-semibold text-sm text-on-surface">Debit / Credit Card</span>
             </div>
-            {paymentMethod === 'card' && (
-              <div className="pl-8 space-y-3">
-                <input
-                  type="text"
-                  placeholder="Card Number"
-                  maxLength={19}
-                  className="w-full bg-background border border-outline-variant focus:border-primary rounded-xl px-4 py-3 font-sans text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="MM / YY"
-                    className="bg-background border border-outline-variant focus:border-primary rounded-xl px-4 py-3 font-sans text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                  <input
-                    type="text"
-                    placeholder="CVV"
-                    maxLength={4}
-                    className="bg-background border border-outline-variant focus:border-primary rounded-xl px-4 py-3 font-sans text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Name on Card"
-                  className="w-full bg-background border border-outline-variant focus:border-primary rounded-xl px-4 py-3 font-sans text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-            )}
+            {paymentMethod === 'card' && <p className="pl-8 text-xs text-outline">Card details are entered securely in Razorpay Checkout.</p>}
           </div>
 
           {/* Pay Button */}
@@ -226,7 +222,7 @@ export const PaymentCheckout = () => {
               <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                 <p className="font-sans text-xs text-outline mb-0.5">Your business URL:</p>
                 <p className="font-mono text-sm font-semibold text-primary break-all">
-                  nexora.in/{formData.slug}
+                  zyphoriz.in/{formData.slug}
                 </p>
               </div>
             )}
@@ -250,7 +246,7 @@ export const PaymentCheckout = () => {
             {/* Included */}
             <div className="space-y-2">
               {[
-                'Dedicated URL at nexora.in/{name}',
+                'Dedicated URL at zyphoriz.in/{name}',
                 'Verified business badge',
                 'Direct call & WhatsApp button',
                 'Category listing & search',

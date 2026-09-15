@@ -14,14 +14,14 @@ export const Auth = () => {
   const destination = searchParams.get('redirect') || '/dashboard';
   const set = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
     try {
       if (mode === 'register') {
-        register({ mobile: form.mobile, email: form.email, password: form.password });
+        await register({ mobile: form.mobile, email: form.email, password: form.password });
       } else {
-        login({ identifier: form.identifier, password: form.password });
+        await login({ identifier: form.identifier, password: form.password });
       }
       navigate(destination, { replace: true });
     } catch (authError) {
@@ -37,7 +37,7 @@ export const Auth = () => {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h1 className="font-headline text-2xl md:text-3xl font-bold text-on-surface">
-            {mode === 'register' ? 'Create your Nexora account' : 'Welcome back'}
+            {mode === 'register' ? 'Create your zyphoriz account' : 'Welcome back'}
           </h1>
           <p className="font-sans text-sm text-on-surface-variant mt-2">
             {mode === 'register' ? 'Sign up before listing your business.' : 'Log in to manage your businesses.'}
@@ -95,7 +95,7 @@ export const Auth = () => {
             </div>
           </label>
 
-          {error && <p className="text-sm text-error bg-red-50 rounded-xl px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-error bg-error-container rounded-xl px-3 py-2">{error}</p>}
 
           <button type="submit" className="w-full inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors">
             {mode === 'register' ? 'Create account' : 'Log in'} <ArrowRight className="w-4 h-4" />

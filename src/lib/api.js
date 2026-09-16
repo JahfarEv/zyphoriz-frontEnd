@@ -1,7 +1,13 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const TOKEN_KEY = 'zyphoriz_token';
 
 const request = async (path, options = {}) => {
-  const headers = { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...options.headers };
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = {
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -12,7 +18,13 @@ const request = async (path, options = {}) => {
   if (!response.ok || payload.success === false) {
     throw new Error(payload.message || 'Something went wrong. Please try again.');
   }
-  return payload.data;
+  return payload.token ? { ...payload.data, token: payload.token } : payload.data;
+};
+
+export const authToken = {
+  get: () => localStorage.getItem(TOKEN_KEY),
+  set: (token) => localStorage.setItem(TOKEN_KEY, token),
+  clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
 export const api = {

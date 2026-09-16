@@ -14,6 +14,9 @@ import { NotFound } from './pages/NotFound/NotFound';
 import { SearchResults } from './pages/SearchResults/SearchResults';
 import { Auth } from './pages/Auth/Auth';
 import { UserDashboard } from './pages/UserDashboard/UserDashboard';
+import { About } from './pages/About/About';
+import { Contact } from './pages/Contact/Contact';
+import { Terms } from './pages/Terms/Terms';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const RequireAuth = ({ children }) => {
@@ -46,6 +49,9 @@ const AppLayout = () => {
           <Route path="/payment/success" element={<RequireAuth><PaymentSuccess /></RequireAuth>} />
           <Route path="/dashboard" element={<RequireAuth><UserDashboard /></RequireAuth>} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<Terms />} />
           {/* Individual business page at /{slug} */}
           <Route path="/:slug" element={<BusinessProfile />} />
           <Route path="*" element={<NotFound />} />

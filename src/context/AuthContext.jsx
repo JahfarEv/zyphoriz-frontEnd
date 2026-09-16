@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState, useContext } from 'react';
-import { api } from '../lib/api';
+import { api, authToken } from '../lib/api';
 
 const referralCodeFor = (email, mobile) =>
   `NEX-${email.replace(/[^a-z0-9]/gi, '').slice(0, 4).toUpperCase()}-${mobile.replace(/\D/g, '').slice(-4)}`;
@@ -26,18 +26,21 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (details) => {
     const data = await api.auth.register(details);
+    authToken.set(data.token);
     const newUser = withReferralData(data.user);
     setUser(newUser);
   };
 
   const login = async (details) => {
     const data = await api.auth.login(details);
+    authToken.set(data.token);
     const normalizedUser = withReferralData(data.user);
     setUser(normalizedUser);
   };
 
   const logout = async () => {
     await api.auth.logout().catch(() => {});
+    authToken.clear();
     setUser(null);
   };
 

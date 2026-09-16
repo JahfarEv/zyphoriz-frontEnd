@@ -853,6 +853,397 @@
 // };
 
 
+// import React, { useEffect, useState } from 'react';
+// import { Link } from 'react-router-dom';
+// import {
+//   ArrowRight,
+//   PlusCircle,
+//   Search,
+//   SlidersHorizontal,
+//   X,
+//   Sparkles,
+//   TrendingUp,
+//   Star,
+//   Globe,
+//   ShieldCheck,
+//   Phone,
+// } from 'lucide-react';
+// import { BusinessCard } from '../../components/business/BusinessCard';
+// import { api } from '../../lib/api';
+
+// export const Home = () => {
+//   const [activeCategory, setActiveCategory] = useState(null);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [businesses, setBusinesses] = useState([]);
+//   const [categories, setCategories] = useState([]);
+//   const [categoryPage, setCategoryPage] = useState(1);
+//   const [categoryPagination, setCategoryPagination] = useState({ pages: 1 });
+//   const [businessPage, setBusinessPage] = useState(1);
+//   const [businessPagination, setBusinessPagination] = useState({ total: 0, pages: 1 });
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState('');
+
+//   useEffect(() => {
+//     api.categories.list(`?page=${categoryPage}&limit=8`)
+//       .then((data) => {
+//         setCategories(data.categories || []);
+//         setCategoryPagination(data.pagination || { pages: 1 });
+//       })
+//       .catch(() => {});
+//   }, [categoryPage]);
+
+//   useEffect(() => {
+//     setLoading(true);
+//     setError('');
+//     const params = new URLSearchParams({ page: businessPage, limit: 9 });
+//     if (activeCategory) params.set('category', activeCategory);
+//     if (searchQuery.trim()) params.set('q', searchQuery.trim());
+//     api.businesses.list(`?${params.toString()}`)
+//       .then((data) => {
+//         setBusinesses(data.businesses || []);
+//         setBusinessPagination(data.pagination || { total: 0, pages: 1 });
+//       })
+//       .catch((requestError) => setError(requestError.message))
+//       .finally(() => setLoading(false));
+//   }, [activeCategory, businessPage, searchQuery]);
+
+//   const activeCategoryName = activeCategory
+//     ? categories.find((c) => c.id === activeCategory)?.name
+//     : null;
+
+//   const changeSearch = (value) => {
+//     setSearchQuery(value);
+//     setBusinessPage(1);
+//   };
+
+//   const selectCategory = (categoryId) => {
+//     setActiveCategory(categoryId);
+//     setBusinessPage(1);
+//   };
+
+//   return (
+//     <div className="w-full">
+//       {/* Hero */}
+//       <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden bg-[#16292C]">
+//         <div
+//           className="absolute inset-0 opacity-[0.15]"
+//           style={{
+//             backgroundImage: `radial-gradient(#E8A23D 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+//         {/* Fade toward the businesses section below */}
+//         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#16292C] to-transparent pointer-events-none" />
+
+//         <div className="max-w-4xl mx-auto text-center relative z-10">
+//           <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6">
+//             <Sparkles className="w-4 h-4" />
+//             Discover amazing local businesses
+//           </div>
+
+//           <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-[#FBF6EC] mb-3 leading-tight">
+//             Find local businesses
+//             <span className="block">& shops near you</span>
+//           </h1>
+//           <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
+
+//           <p className="font-sans text-lg text-[#FBF6EC]/80 mb-10 max-w-2xl mx-auto">
+//             Browse trusted businesses by category — restaurants, medical, beauty, electronics &amp; more.
+//           </p>
+
+//           <div className="relative max-w-xl mx-auto mb-8">
+//             <div className="relative bg-[#FBF6EC] rounded-2xl shadow-lg border-2 border-[#E8A23D]/40 focus-within:border-[#E8A23D] transition-colors">
+//               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#16292C]/40" />
+//               <input
+//                 type="text"
+//                 value={searchQuery}
+//                 onChange={(e) => changeSearch(e.target.value)}
+//                 placeholder="Search businesses, shops, services..."
+//                 className="w-full pl-12 pr-12 py-4 bg-transparent rounded-2xl font-sans text-sm text-[#241F1A] placeholder:text-[#241F1A]/40 focus:outline-none"
+//               />
+//               {searchQuery && (
+//                 <button
+//                   onClick={() => changeSearch('')}
+//                   className="absolute right-4 top-1/2 -translate-y-1/2 text-[#241F1A]/40 hover:text-[#241F1A] transition-colors"
+//                 >
+//                   <X className="w-4 h-4" />
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+
+//           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+//             <Link
+//               to="/create"
+//               className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] font-sans font-bold px-8 py-4 rounded-2xl hover:bg-[#F4C874] active:scale-[0.98] transition-all duration-200 text-base"
+//             >
+//               <PlusCircle className="w-5 h-5" />
+//               List your business — ₹499
+//             </Link>
+//           </div>
+
+//           <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-[#FBF6EC]/15">
+//             <div className="text-[#FBF6EC]">
+//               <div className="text-2xl font-bold text-[#E8A23D]">500+</div>
+//               <div className="text-sm text-[#FBF6EC]/60">Listings</div>
+//             </div>
+//             <div className="text-[#FBF6EC]">
+//               <div className="text-2xl font-bold text-[#E8A23D]">50+</div>
+//               <div className="text-sm text-[#FBF6EC]/60">Categories</div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Business Listings — ink fading into teal, continuing the brand gradient */}
+//      <section
+//         id="businesses"
+//         className="relative w-full py-10 px-4 md:px-8 pb-20 bg-[#FBF6EC] border-t border-[#241F1A]/10"
+//       >
+//         <div
+//           className="absolute inset-0 opacity-[0.12]"
+//           style={{
+//             backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+
+//         <button
+//           onClick={() => setShowFilters(!showFilters)}
+//           className="relative lg:hidden inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-xl bg-white border border-[#241F1A]/10 shadow-sm font-sans text-sm font-semibold text-[#241F1A] hover:shadow-md transition-all"
+//         >
+//           <SlidersHorizontal className="w-4 h-4" /> Filters
+//           {activeCategory && <span className="w-2 h-2 rounded-full bg-[#B94630]" />}
+//         </button>
+
+//         <div className="relative flex flex-col lg:flex-row gap-8 items-start">
+        
+
+
+
+// <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
+//   <div className="bg-white rounded-2xl shadow-lg border border-[#241F1A]/10 p-6 lg:sticky lg:top-24">
+//     <div className="flex items-center justify-between mb-6">
+//       <h2 className="font-headline text-lg font-bold text-[#241F1A] flex items-center gap-2">
+//         <span className="w-8 h-8 rounded-xl bg-[#B94630]/10 flex items-center justify-center">
+//           <TrendingUp className="w-4 h-4 text-[#B94630]" />
+//         </span>
+//         Categories
+//       </h2>
+//       {activeCategory && (
+//         <button
+//           onClick={() => selectCategory(null)}
+//           className="text-xs font-semibold text-[#B94630] hover:underline"
+//         >
+//           Clear
+//         </button>
+//       )}
+//     </div>
+
+//     <div className="space-y-1.5">
+//       <button
+//         onClick={() => selectCategory(null)}
+//         className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 border-l-4 ${
+//           !activeCategory
+//             ? 'bg-gradient-to-r from-[#16292C] to-[#2f756d] text-[#FBF6EC] font-semibold border-[#E8A23D]'
+//             : 'text-[#241F1A]/70 hover:bg-[#FBF6EC] border-transparent'
+//         }`}
+//       >
+//         <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+//           !activeCategory ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#16292C]/8 text-[#16292C]'
+//         }`}>
+//           ★
+//         </span>
+//         All businesses
+//       </button>
+
+//       {categories.map((category) => {
+//         const isActive = activeCategory === category.id;
+//         return (
+//           <button
+//             key={category.id}
+//             onClick={() => selectCategory(category.id)}
+//             className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center justify-between gap-2 border-l-4 ${
+//               isActive
+//                 ? 'bg-gradient-to-r from-[#16292C] to-[#2f756d] text-[#FBF6EC] font-semibold border-[#E8A23D]'
+//                 : 'text-[#241F1A]/70 hover:bg-[#FBF6EC] border-transparent'
+//             }`}
+//           >
+//             <span className="flex items-center gap-2.5 min-w-0">
+//               <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+//                 isActive ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#E8A23D]/15 text-[#B94630]'
+//               }`}>
+//                 {category.name.charAt(0).toUpperCase()}
+//               </span>
+//               <span className="truncate">{category.name}</span>
+//             </span>
+//             {typeof category.count === 'number' && (
+//               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+//                 isActive ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#241F1A]/8 text-[#241F1A]/50'
+//               }`}>
+//                 {category.count}
+//               </span>
+//             )}
+//           </button>
+//         );
+//       })}
+//     </div>
+
+//     {categoryPagination.pages > 1 && (
+//       <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t border-[#241F1A]/10">
+//         <button
+//           type="button"
+//           onClick={() => setCategoryPage((page) => Math.max(page - 1, 1))}
+//           disabled={categoryPage === 1}
+//           className="text-xs font-semibold text-[#16292C] disabled:opacity-35 disabled:cursor-not-allowed"
+//         >
+//           Previous
+//         </button>
+//         <span className="text-[11px] text-[#241F1A]/50">{categoryPage} / {categoryPagination.pages}</span>
+//         <button
+//           type="button"
+//           onClick={() => setCategoryPage((page) => Math.min(page + 1, categoryPagination.pages))}
+//           disabled={categoryPage >= categoryPagination.pages}
+//           className="text-xs font-semibold text-[#B94630] disabled:opacity-35 disabled:cursor-not-allowed"
+//         >
+//           Next
+//         </button>
+//       </div>
+//     )}
+//   </div>
+// </aside>
+
+//           <div className="flex-1 min-w-0 w-full">
+//             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+//               <div>
+//                 <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#16292C] flex items-center gap-3">
+//                   {activeCategoryName || 'All businesses'}
+//                   <span className="text-sm font-normal text-[#16292C] bg-[#F1E8D8] px-3 py-1 rounded-full">
+//                     {loading ? '...' : businessPagination.total}
+//                   </span>
+//                 </h2>
+//                 <p className="font-sans text-sm text-[#FBF6EC]/60 mt-1">
+//                   {searchQuery && `Showing results for "${searchQuery}"`}
+//                 </p>
+//               </div>
+//             </div>
+
+//             {error ? (
+//               <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-[#241F1A]/10">
+//                 <h3 className="font-headline text-xl font-bold text-[#241F1A] mb-2">Unable to load businesses</h3>
+//                 <p className="font-sans text-sm text-[#241F1A]/50">{error}</p>
+//               </div>
+//             ) : loading ? (
+//               <div className="text-center py-20 text-[#FBF6EC]/70">Loading businesses...</div>
+//             ) : businesses.length === 0 ? (
+//               <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-[#241F1A]/10">
+//                 <div className="text-6xl mb-4">🔍</div>
+//                 <h3 className="font-headline text-xl font-bold text-[#241F1A] mb-2">No businesses found</h3>
+//                 <p className="font-sans text-sm text-[#241F1A]/50 mb-8">
+//                   {searchQuery
+//                     ? `No results for "${searchQuery}" in this category.`
+//                     : 'No businesses listed in this category yet.'}
+//                 </p>
+//                 <Link
+//                   to="/create"
+//                   className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] font-sans font-bold px-6 py-3 rounded-xl hover:bg-[#F4C874] transition-all duration-200 text-sm"
+//                 >
+//                   <PlusCircle className="w-4 h-4" /> Be the first — list your business
+//                 </Link>
+//               </div>
+//             ) : (
+//               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+//                 {businesses.map((business) => (
+//                   <BusinessCard key={business._id || business.id || business.slug} business={business} />
+//                 ))}
+//               </div>
+//             )}
+//             {!loading && !error && businessPagination.pages > 1 && (
+//               <div className="flex items-center justify-center gap-5 mt-8">
+//                 <button
+//                   type="button"
+//                   onClick={() => setBusinessPage((page) => Math.max(page - 1, 1))}
+//                   disabled={businessPage === 1}
+//                   className="px-4 py-2 rounded-xl bg-[#FBF6EC] text-[#16292C] text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+//                 >
+//                   Previous
+//                 </button>
+//                 <span className="text-sm font-semibold text-[#FBF6EC]">Page {businessPage} of {businessPagination.pages}</span>
+//                 <button
+//                   type="button"
+//                   onClick={() => setBusinessPage((page) => Math.min(page + 1, businessPagination.pages))}
+//                   disabled={businessPage >= businessPagination.pages}
+//                   className="px-4 py-2 rounded-xl bg-[#E8A23D] text-[#16292C] text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+//                 >
+//                   Next
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Bottom CTA — teal fading into brick */}
+//       <section className="relative py-16 px-4 md:px-8 overflow-hidden bg-gradient-to-b from-[#2f756d] to-[#B94630] shadow-[0_-12px_30px_rgba(22,41,44,0.22)]">
+//         <div
+//           className="absolute inset-0 opacity-[0.12]"
+//           style={{
+//             backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+//         <div className="max-w-3xl mx-auto text-center relative z-10">
+//           <div className="inline-flex items-center gap-2 bg-[#FBF6EC] text-[#B94630] px-4 py-2 rounded-full text-sm font-bold mb-6">
+//             <Star className="w-4 h-4 fill-current" />
+//             Join 500+ business owners
+//           </div>
+
+//           <h2 className="font-headline text-3xl md:text-4xl font-bold text-[#FBF6EC] mb-4">
+//             Own a business?
+//           </h2>
+//           <p className="font-sans text-lg text-[#FBF6EC]/85 mb-8 max-w-xl mx-auto">
+//             Get discovered by thousands of local customers for just ₹499.
+//           </p>
+
+//           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left">
+//             {[
+//               { icon: Globe, label: 'Your own business URL', sub: 'zyphoriz.in/{name}' },
+//               { icon: ShieldCheck, label: 'Verified badge', sub: 'Trusted by customers' },
+//               { icon: Phone, label: 'Direct call & WhatsApp', sub: 'Connect instantly' },
+//             ].map(({ icon: Icon, label, sub }) => (
+//               <div key={label} className="bg-[#FBF6EC] rounded-xl p-4 flex items-start gap-3">
+//                 <div className="w-8 h-8 rounded-lg bg-[#B94630]/10 flex items-center justify-center flex-shrink-0">
+//                   <Icon className="w-4 h-4 text-[#B94630]" />
+//                 </div>
+//                 <div>
+//                   <p className="font-sans text-xs font-semibold text-[#241F1A]">{label}</p>
+//                   <p className="font-sans text-xs text-[#241F1A]/50">{sub}</p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+
+//           <Link
+//             to="/create"
+//             className="inline-flex items-center gap-3 bg-[#FBF6EC] text-[#B94630] font-sans font-bold px-10 py-4 rounded-2xl hover:bg-white transition-all duration-200 text-lg"
+//           >
+//             <PlusCircle className="w-6 h-6" />
+//             List your business
+//             <ArrowRight className="w-5 h-5" />
+//           </Link>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// };
+
+
+
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -870,6 +1261,10 @@ import {
 } from 'lucide-react';
 import { BusinessCard } from '../../components/business/BusinessCard';
 import { api } from '../../lib/api';
+
+const ACCENT = '#14b8a6';
+const ACCENT_SOFT = '#5eead4';
+const AMBER = '#E8A23D';
 
 export const Home = () => {
   const [activeCategory, setActiveCategory] = useState(null);
@@ -923,49 +1318,50 @@ export const Home = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-[#16292C] text-white">
       {/* Hero */}
-      <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden bg-[#16292C]">
+      <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.15]"
+          className="absolute inset-0 opacity-[0.14]"
           style={{
-            backgroundImage: `radial-gradient(#E8A23D 1.5px, transparent 1.5px)`,
+            backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
             backgroundSize: '22px 22px',
           }}
         />
-        {/* Fade toward the businesses section below */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#16292C] to-transparent pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_50%_20%,rgba(20,184,166,0.18),transparent_55%)]" />
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
             <Sparkles className="w-4 h-4" />
             Discover amazing local businesses
           </div>
 
-          <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-[#FBF6EC] mb-3 leading-tight">
+          <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-white mb-3 leading-tight">
             Find local businesses
-            <span className="block">& shops near you</span>
+            <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent">
+              &amp; shops near you
+            </span>
           </h1>
           <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
 
-          <p className="font-sans text-lg text-[#FBF6EC]/80 mb-10 max-w-2xl mx-auto">
+          <p className="font-sans text-lg text-white/70 mb-10 max-w-2xl mx-auto">
             Browse trusted businesses by category — restaurants, medical, beauty, electronics &amp; more.
           </p>
 
           <div className="relative max-w-xl mx-auto mb-8">
-            <div className="relative bg-[#FBF6EC] rounded-2xl shadow-lg border-2 border-[#E8A23D]/40 focus-within:border-[#E8A23D] transition-colors">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#16292C]/40" />
+            <div className="relative bg-white/[0.06] backdrop-blur-md rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] border border-white/15 focus-within:border-[#14b8a6]/60 transition-colors">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => changeSearch(e.target.value)}
                 placeholder="Search businesses, shops, services..."
-                className="w-full pl-12 pr-12 py-4 bg-transparent rounded-2xl font-sans text-sm text-[#241F1A] placeholder:text-[#241F1A]/40 focus:outline-none"
+                className="w-full pl-12 pr-12 py-4 bg-transparent rounded-2xl font-sans text-sm text-white placeholder:text-white/40 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => changeSearch('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#241F1A]/40 hover:text-[#241F1A] transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -976,178 +1372,202 @@ export const Home = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/create"
-              className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] font-sans font-bold px-8 py-4 rounded-2xl hover:bg-[#F4C874] active:scale-[0.98] transition-all duration-200 text-base"
+              className="inline-flex items-center gap-2 text-white font-sans font-bold px-8 py-4 rounded-2xl transition-all duration-200 text-base
+                         bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
+                         hover:from-[#0d6b64] hover:to-[#0ea5a0]
+                         shadow-[0_18px_40px_-14px_rgba(20,184,166,0.7)]
+                         active:scale-[0.98]"
             >
               <PlusCircle className="w-5 h-5" />
               List your business — ₹499
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-[#FBF6EC]/15">
-            <div className="text-[#FBF6EC]">
-              <div className="text-2xl font-bold text-[#E8A23D]">500+</div>
-              <div className="text-sm text-[#FBF6EC]/60">Listings</div>
+          <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-white/10">
+            <div>
+              <div className="text-2xl font-bold text-[#5eead4]">500+</div>
+              <div className="text-sm text-white/60">Listings</div>
             </div>
-            <div className="text-[#FBF6EC]">
+            <div>
               <div className="text-2xl font-bold text-[#E8A23D]">50+</div>
-              <div className="text-sm text-[#FBF6EC]/60">Categories</div>
+              <div className="text-sm text-white/60">Categories</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Business Listings — ink fading into teal, continuing the brand gradient */}
-     <section
+      {/* Business Listings */}
+      <section
         id="businesses"
-        className="relative w-full py-10 px-4 md:px-8 pb-20 bg-[#FBF6EC] border-t border-[#241F1A]/10"
+        className="relative w-full py-10 px-4 md:px-8 pb-20 border-t border-white/10"
       >
         <div
-          className="absolute inset-0 opacity-[0.12]"
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
           style={{
-            backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
+            backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
             backgroundSize: '22px 22px',
           }}
         />
 
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="relative lg:hidden inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-xl bg-white border border-[#241F1A]/10 shadow-sm font-sans text-sm font-semibold text-[#241F1A] hover:shadow-md transition-all"
+          className="relative lg:hidden inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-xl bg-white/[0.06] border border-white/15 backdrop-blur-md font-sans text-sm font-semibold text-white hover:bg-white/[0.1] transition-all"
         >
           <SlidersHorizontal className="w-4 h-4" /> Filters
-          {activeCategory && <span className="w-2 h-2 rounded-full bg-[#B94630]" />}
+          {activeCategory && <span className="w-2 h-2 rounded-full bg-[#14b8a6]" />}
         </button>
 
         <div className="relative flex flex-col lg:flex-row gap-8 items-start">
-        
+          {/* Sidebar */}
+          <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
+            <div className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6 lg:sticky lg:top-24 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-headline text-lg font-bold text-white flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-[#5eead4]" />
+                  </span>
+                  Categories
+                </h2>
+                {activeCategory && (
+                  <button
+                    onClick={() => selectCategory(null)}
+                    className="text-xs font-semibold text-[#5eead4] hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
 
+              <div className="space-y-1.5">
+                <button
+                  onClick={() => selectCategory(null)}
+                  className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 border-l-4 ${
+                    !activeCategory
+                      ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
+                      : 'text-white/70 hover:bg-white/[0.06] border-transparent'
+                  }`}
+                >
+                  <span
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                      !activeCategory ? 'bg-white/15 text-white' : 'bg-white/[0.06] text-white/60'
+                    }`}
+                  >
+                    ★
+                  </span>
+                  All businesses
+                </button>
 
+                {categories.map((category) => {
+                  const isActive = activeCategory === category.id;
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => selectCategory(category.id)}
+                      className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center justify-between gap-2 border-l-4 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
+                          : 'text-white/70 hover:bg-white/[0.06] border-transparent'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                            isActive
+                              ? 'bg-white/15 text-white'
+                              : 'bg-[#E8A23D]/15 text-[#E8A23D]'
+                          }`}
+                        >
+                          {category.name.charAt(0).toUpperCase()}
+                        </span>
+                        <span className="truncate">{category.name}</span>
+                      </span>
+                      {typeof category.count === 'number' && (
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                            isActive
+                              ? 'bg-white/15 text-white'
+                              : 'bg-white/[0.06] text-white/60'
+                          }`}
+                        >
+                          {category.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
 
-<aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
-  <div className="bg-white rounded-2xl shadow-lg border border-[#241F1A]/10 p-6 lg:sticky lg:top-24">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="font-headline text-lg font-bold text-[#241F1A] flex items-center gap-2">
-        <span className="w-8 h-8 rounded-xl bg-[#B94630]/10 flex items-center justify-center">
-          <TrendingUp className="w-4 h-4 text-[#B94630]" />
-        </span>
-        Categories
-      </h2>
-      {activeCategory && (
-        <button
-          onClick={() => selectCategory(null)}
-          className="text-xs font-semibold text-[#B94630] hover:underline"
-        >
-          Clear
-        </button>
-      )}
-    </div>
+              {categoryPagination.pages > 1 && (
+                <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryPage((page) => Math.max(page - 1, 1))}
+                    disabled={categoryPage === 1}
+                    className="text-xs font-semibold text-white/70 hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-[11px] text-white/50">
+                    {categoryPage} / {categoryPagination.pages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCategoryPage((page) => Math.min(page + 1, categoryPagination.pages))
+                    }
+                    disabled={categoryPage >= categoryPagination.pages}
+                    className="text-xs font-semibold text-[#5eead4] hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          </aside>
 
-    <div className="space-y-1.5">
-      <button
-        onClick={() => selectCategory(null)}
-        className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 border-l-4 ${
-          !activeCategory
-            ? 'bg-gradient-to-r from-[#16292C] to-[#2f756d] text-[#FBF6EC] font-semibold border-[#E8A23D]'
-            : 'text-[#241F1A]/70 hover:bg-[#FBF6EC] border-transparent'
-        }`}
-      >
-        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-          !activeCategory ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#16292C]/8 text-[#16292C]'
-        }`}>
-          ★
-        </span>
-        All businesses
-      </button>
-
-      {categories.map((category) => {
-        const isActive = activeCategory === category.id;
-        return (
-          <button
-            key={category.id}
-            onClick={() => selectCategory(category.id)}
-            className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center justify-between gap-2 border-l-4 ${
-              isActive
-                ? 'bg-gradient-to-r from-[#16292C] to-[#2f756d] text-[#FBF6EC] font-semibold border-[#E8A23D]'
-                : 'text-[#241F1A]/70 hover:bg-[#FBF6EC] border-transparent'
-            }`}
-          >
-            <span className="flex items-center gap-2.5 min-w-0">
-              <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                isActive ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#E8A23D]/15 text-[#B94630]'
-              }`}>
-                {category.name.charAt(0).toUpperCase()}
-              </span>
-              <span className="truncate">{category.name}</span>
-            </span>
-            {typeof category.count === 'number' && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                isActive ? 'bg-[#FBF6EC]/20 text-[#FBF6EC]' : 'bg-[#241F1A]/8 text-[#241F1A]/50'
-              }`}>
-                {category.count}
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-
-    {categoryPagination.pages > 1 && (
-      <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t border-[#241F1A]/10">
-        <button
-          type="button"
-          onClick={() => setCategoryPage((page) => Math.max(page - 1, 1))}
-          disabled={categoryPage === 1}
-          className="text-xs font-semibold text-[#16292C] disabled:opacity-35 disabled:cursor-not-allowed"
-        >
-          Previous
-        </button>
-        <span className="text-[11px] text-[#241F1A]/50">{categoryPage} / {categoryPagination.pages}</span>
-        <button
-          type="button"
-          onClick={() => setCategoryPage((page) => Math.min(page + 1, categoryPagination.pages))}
-          disabled={categoryPage >= categoryPagination.pages}
-          className="text-xs font-semibold text-[#B94630] disabled:opacity-35 disabled:cursor-not-allowed"
-        >
-          Next
-        </button>
-      </div>
-    )}
-  </div>
-</aside>
-
+          {/* Listings */}
           <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
               <div>
-                <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#16292C] flex items-center gap-3">
+                <h2 className="font-headline text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
                   {activeCategoryName || 'All businesses'}
-                  <span className="text-sm font-normal text-[#16292C] bg-[#F1E8D8] px-3 py-1 rounded-full">
+                  <span className="text-sm font-normal text-white/70 bg-white/[0.06] border border-white/10 px-3 py-1 rounded-full">
                     {loading ? '...' : businessPagination.total}
                   </span>
                 </h2>
-                <p className="font-sans text-sm text-[#FBF6EC]/60 mt-1">
+                <p className="font-sans text-sm text-white/60 mt-1">
                   {searchQuery && `Showing results for "${searchQuery}"`}
                 </p>
               </div>
             </div>
 
             {error ? (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-[#241F1A]/10">
-                <h3 className="font-headline text-xl font-bold text-[#241F1A] mb-2">Unable to load businesses</h3>
-                <p className="font-sans text-sm text-[#241F1A]/50">{error}</p>
+              <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
+                <h3 className="font-headline text-xl font-bold text-white mb-2">
+                  Unable to load businesses
+                </h3>
+                <p className="font-sans text-sm text-white/50">{error}</p>
               </div>
             ) : loading ? (
-              <div className="text-center py-20 text-[#FBF6EC]/70">Loading businesses...</div>
+              <div className="text-center py-20 text-white/60">Loading businesses...</div>
             ) : businesses.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-[#241F1A]/10">
+              <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="font-headline text-xl font-bold text-[#241F1A] mb-2">No businesses found</h3>
-                <p className="font-sans text-sm text-[#241F1A]/50 mb-8">
+                <h3 className="font-headline text-xl font-bold text-white mb-2">
+                  No businesses found
+                </h3>
+                <p className="font-sans text-sm text-white/60 mb-8">
                   {searchQuery
                     ? `No results for "${searchQuery}" in this category.`
                     : 'No businesses listed in this category yet.'}
                 </p>
                 <Link
                   to="/create"
-                  className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] font-sans font-bold px-6 py-3 rounded-xl hover:bg-[#F4C874] transition-all duration-200 text-sm"
+                  className="inline-flex items-center gap-2 text-white font-sans font-bold px-6 py-3 rounded-xl text-sm transition-all
+                             bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
+                             hover:from-[#0d6b64] hover:to-[#0ea5a0]
+                             shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)]
+                             active:scale-[0.98]"
                 >
                   <PlusCircle className="w-4 h-4" /> Be the first — list your business
                 </Link>
@@ -1155,26 +1575,34 @@ export const Home = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {businesses.map((business) => (
-                  <BusinessCard key={business._id || business.id || business.slug} business={business} />
+                  <BusinessCard
+                    key={business._id || business.id || business.slug}
+                    business={business}
+                  />
                 ))}
               </div>
             )}
+
             {!loading && !error && businessPagination.pages > 1 && (
               <div className="flex items-center justify-center gap-5 mt-8">
                 <button
                   type="button"
                   onClick={() => setBusinessPage((page) => Math.max(page - 1, 1))}
                   disabled={businessPage === 1}
-                  className="px-4 py-2 rounded-xl bg-[#FBF6EC] text-[#16292C] text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm font-semibold hover:bg-white/[0.1] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   Previous
                 </button>
-                <span className="text-sm font-semibold text-[#FBF6EC]">Page {businessPage} of {businessPagination.pages}</span>
+                <span className="text-sm font-semibold text-white/70">
+                  Page {businessPage} of {businessPagination.pages}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setBusinessPage((page) => Math.min(page + 1, businessPagination.pages))}
+                  onClick={() =>
+                    setBusinessPage((page) => Math.min(page + 1, businessPagination.pages))
+                  }
                   disabled={businessPage >= businessPagination.pages}
-                  className="px-4 py-2 rounded-xl bg-[#E8A23D] text-[#16292C] text-sm font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl text-[#16292C] text-sm font-semibold shadow-[0_10px_25px_-10px_rgba(232,162,61,0.7)] disabled:opacity-40 disabled:cursor-not-allowed transition-transform hover:scale-[1.03] bg-[#E8A23D] hover:bg-[#F4C874]"
                 >
                   Next
                 </button>
@@ -1184,25 +1612,28 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Bottom CTA — teal fading into brick */}
-      <section className="relative py-16 px-4 md:px-8 overflow-hidden bg-gradient-to-b from-[#2f756d] to-[#B94630] shadow-[0_-12px_30px_rgba(22,41,44,0.22)]">
+      {/* Bottom CTA */}
+      <section className="relative py-16 px-4 md:px-8 overflow-hidden bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#b94630_100%)] shadow-[0_-12px_30px_rgba(22,41,44,0.35)]">
         <div
-          className="absolute inset-0 opacity-[0.12]"
+          className="absolute inset-0 opacity-[0.1] pointer-events-none"
           style={{
             backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
             backgroundSize: '22px 22px',
           }}
         />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border-[24px] border-white/10" />
+        <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full border-[28px] border-white/10" />
+
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#FBF6EC] text-[#B94630] px-4 py-2 rounded-full text-sm font-bold mb-6">
+          <div className="inline-flex items-center gap-2 bg-[#FBF6EC] text-[#B94630] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-lg">
             <Star className="w-4 h-4 fill-current" />
             Join 500+ business owners
           </div>
 
-          <h2 className="font-headline text-3xl md:text-4xl font-bold text-[#FBF6EC] mb-4">
+          <h2 className="font-headline text-3xl md:text-4xl font-bold text-white mb-4">
             Own a business?
           </h2>
-          <p className="font-sans text-lg text-[#FBF6EC]/85 mb-8 max-w-xl mx-auto">
+          <p className="font-sans text-lg text-white/90 mb-8 max-w-xl mx-auto">
             Get discovered by thousands of local customers for just ₹499.
           </p>
 
@@ -1212,13 +1643,16 @@ export const Home = () => {
               { icon: ShieldCheck, label: 'Verified badge', sub: 'Trusted by customers' },
               { icon: Phone, label: 'Direct call & WhatsApp', sub: 'Connect instantly' },
             ].map(({ icon: Icon, label, sub }) => (
-              <div key={label} className="bg-[#FBF6EC] rounded-xl p-4 flex items-start gap-3">
+              <div
+                key={label}
+                className="bg-[#FBF6EC] rounded-xl p-4 flex items-start gap-3 shadow-md"
+              >
                 <div className="w-8 h-8 rounded-lg bg-[#B94630]/10 flex items-center justify-center flex-shrink-0">
                   <Icon className="w-4 h-4 text-[#B94630]" />
                 </div>
                 <div>
                   <p className="font-sans text-xs font-semibold text-[#241F1A]">{label}</p>
-                  <p className="font-sans text-xs text-[#241F1A]/50">{sub}</p>
+                  <p className="font-sans text-xs text-[#241F1A]/60">{sub}</p>
                 </div>
               </div>
             ))}
@@ -1226,7 +1660,7 @@ export const Home = () => {
 
           <Link
             to="/create"
-            className="inline-flex items-center gap-3 bg-[#FBF6EC] text-[#B94630] font-sans font-bold px-10 py-4 rounded-2xl hover:bg-white transition-all duration-200 text-lg"
+            className="inline-flex items-center gap-3 bg-[#FBF6EC] text-[#B94630] font-sans font-bold px-10 py-4 rounded-2xl hover:bg-white transition-all duration-200 text-lg shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] active:scale-[0.98]"
           >
             <PlusCircle className="w-6 h-6" />
             List your business

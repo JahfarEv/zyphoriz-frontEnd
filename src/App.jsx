@@ -18,6 +18,7 @@ import { About } from './pages/About/About';
 import { Contact } from './pages/Contact/Contact';
 import { Terms } from './pages/Terms/Terms';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PrivacyPolicy } from './pages/Privacy/Privacy';
 
 const RequireAuth = ({ children }) => {
   const { user, loading } = useAuth();
@@ -52,6 +53,8 @@ const AppLayout = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+
           {/* Individual business page at /{slug} */}
           <Route path="/:slug" element={<BusinessProfile />} />
           <Route path="*" element={<NotFound />} />

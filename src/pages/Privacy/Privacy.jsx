@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FileText,
+  ShieldCheck,
   Mail,
   Globe,
   MapPin,
@@ -11,139 +11,111 @@ import {
   ArrowUp,
   PlusCircle,
   ArrowRight,
+  Lock,
+  Cookie,
+  Users,
+  Database,
+  Baby,
+  Link as LinkIcon,
+  Globe2,
+  FileEdit,
 } from 'lucide-react';
 
 const LAST_UPDATED = 'September 16, 2026';
 
 const SECTIONS = [
   {
-    id: 'about-zyphoriz',
-    title: 'About Zyphoriz',
-    body: [
-      'Zyphoriz is a local discovery platform designed to help users discover businesses, services, and relevant information. Features may vary by location, account type, and current service availability.',
+    id: 'information-we-collect',
+    title: 'Information We Collect',
+    blocks: [
+      {
+        subtitle: 'Personal Information',
+        body: 'Depending on how you use Zyphoriz, we may collect your name, email address, mobile number, authentication information, profile information, business information, and information submitted through forms or communications.',
+      },
+      {
+        subtitle: 'Location Information',
+        body: 'We may process city, district, locality, address, area information, and precise location information if you choose to share it. You can control location permissions through your device or browser settings.',
+      },
+      {
+        subtitle: 'Usage and Technical Information',
+        body: 'We may collect IP address, browser and device information, operating system, pages visited, access times, referring website, and log or diagnostic information.',
+      },
     ],
   },
   {
-    id: 'eligibility',
-    title: 'Eligibility',
-    body: [
-      'You may use Zyphoriz only if you are legally capable of entering into a binding agreement under applicable law. If acting for a business, you confirm that you have authority to do so.',
-    ],
-  },
-  {
-    id: 'account-registration',
-    title: 'Account Registration',
-    body: [
-      'You agree to provide accurate information, protect your login credentials, update account details, and promptly report unauthorized access. We may suspend or terminate accounts that violate these Terms.',
-    ],
-  },
-  {
-    id: 'acceptable-use',
-    title: 'Acceptable Use',
+    id: 'how-we-use',
+    title: 'How We Use Your Information',
     bullets: [
-      'Use Zyphoriz only for lawful purposes.',
-      'Do not submit false or misleading information.',
-      'Do not impersonate another person or business.',
-      'Do not upload malicious code or harmful content.',
-      'Do not attempt unauthorized access or disrupt the platform.',
-      'Do not scrape or exploit content without permission.',
-      'Do not harass others or violate their rights.',
+      'Create and manage accounts.',
+      'Provide, operate, and improve Zyphoriz.',
+      'Help users discover local businesses and services.',
+      'Personalize experiences and search results.',
+      'Communicate about accounts, requests, and updates.',
+      'Provide support and maintain security.',
+      'Analyze usage and comply with applicable laws.',
     ],
   },
   {
-    id: 'business-listings',
-    title: 'Business Listings and User Content',
+    id: 'cookies',
+    title: 'Cookies and Similar Technologies',
     body: [
-      'Users or businesses may submit listings, images, descriptions, reviews, and other content. You are responsible for ensuring that content is accurate, lawful, and does not infringe rights. You grant Zyphoriz a non-exclusive, worldwide, royalty-free license to host, store, reproduce, display, and distribute content as reasonably necessary to operate and promote the platform, subject to applicable law.',
+      'We may use cookies, local storage, pixels, and similar technologies for sign-in, preferences, security, analytics, and performance. You can manage cookies through your browser settings.',
     ],
   },
   {
-    id: 'business-info-accuracy',
-    title: 'Business Information Accuracy',
+    id: 'how-we-share',
+    title: 'How We Share Your Information',
     body: [
-      'Listings may be supplied by businesses, users, or third parties. We do not guarantee that all information is accurate, complete, current, or available. Verify important details such as prices, availability, and operating hours independently.',
+      'We may share information with service providers such as hosting, cloud storage, email, analytics, authentication, and security providers; when required by law; or as part of a merger, acquisition, restructuring, or sale of assets. Public business listings may display information you submit for public use.',
     ],
   },
   {
-    id: 'third-party-businesses',
-    title: 'Third-Party Businesses and Services',
+    id: 'data-security',
+    title: 'Data Security',
     body: [
-      'Zyphoriz may help users discover or connect with third-party businesses. Unless expressly stated otherwise, Zyphoriz is not the owner or operator of those businesses and does not guarantee their quality, safety, legality, or availability.',
+      'We use reasonable technical and organizational measures to protect personal information. However, no online transmission or storage system is completely secure.',
     ],
   },
   {
-    id: 'intellectual-property',
-    title: 'Intellectual Property',
+    id: 'data-retention',
+    title: 'Data Retention',
     body: [
-      'The Zyphoriz name, logo, branding, website design, software, text, graphics, and original content are owned by or licensed to Zyphoriz. You may not copy, modify, distribute, sell, reverse engineer, or create derivative works without permission, except as permitted by law.',
+      'We retain information only as reasonably necessary to provide services, maintain records, resolve disputes, enforce agreements, and meet legal obligations.',
     ],
   },
   {
-    id: 'privacy',
-    title: 'Privacy',
-    body: ['Your use of Zyphoriz is also subject to our Privacy Policy.'],
-  },
-  {
-    id: 'payments-fees',
-    title: 'Payments and Fees',
+    id: 'your-rights',
+    title: 'Your Privacy Rights',
     body: [
-      'If paid services, subscriptions, advertising, or other chargeable features are offered, applicable prices and billing terms will be displayed before purchase. Third-party payment provider terms may also apply. Customize this section for actual plans, refunds, renewals, and taxes.',
+      'Depending on applicable law, you may request access, correction, deletion, restriction, objection, or withdrawal of consent. Contact us using the details below. Identity verification may be required.',
     ],
   },
   {
-    id: 'prohibited-listings',
-    title: 'Prohibited Listings',
+    id: 'childrens-privacy',
+    title: "Children's Privacy",
     body: [
-      'We may remove or reject content that is unlawful, fraudulent, misleading, harmful, infringing, or otherwise violates these Terms.',
+      'Zyphoriz is not intended for children under the age required by applicable law to provide consent. Contact us if you believe a child has submitted information improperly.',
     ],
   },
   {
-    id: 'platform-availability',
-    title: 'Platform Availability',
+    id: 'third-party-links',
+    title: 'Third-Party Links',
     body: [
-      'We may modify, suspend, or discontinue all or part of Zyphoriz. We do not guarantee uninterrupted, secure, or error-free operation.',
+      'Our website may contain links to third-party websites or services. We are not responsible for their privacy practices.',
     ],
   },
   {
-    id: 'disclaimers',
-    title: 'Disclaimers',
+    id: 'international-transfers',
+    title: 'International Data Transfers',
     body: [
-      'To the maximum extent permitted by law, Zyphoriz is provided on an “as is” and “as available” basis. We do not guarantee accuracy, availability, suitability, uninterrupted operation, or third-party services.',
-    ],
-  },
-  {
-    id: 'limitation-of-liability',
-    title: 'Limitation of Liability',
-    body: [
-      'To the maximum extent permitted by law, Zyphoriz and its owners, employees, affiliates, and service providers will not be liable for indirect, incidental, special, consequential, or punitive damages. Nothing excludes liability that cannot legally be excluded.',
-    ],
-  },
-  {
-    id: 'indemnification',
-    title: 'Indemnification',
-    body: [
-      'To the extent permitted by law, you agree to indemnify Zyphoriz and its representatives against claims, losses, damages, liabilities, and expenses arising from your violation of these Terms, User Content, misuse, rights violations, or unlawful activity.',
-    ],
-  },
-  {
-    id: 'suspension-termination',
-    title: 'Suspension and Termination',
-    body: [
-      'We may suspend or terminate access if we reasonably believe that you violated these Terms, created a security risk, engaged in unlawful activity, or misused the platform.',
-    ],
-  },
-  {
-    id: 'governing-law',
-    title: 'Governing Law and Disputes',
-    body: [
-      'These Terms shall be governed by the laws of [State/Country]. Disputes shall be subject to the courts of [City, State/Country], unless applicable law requires otherwise. Confirm this clause with legal counsel.',
+      'Information may be processed or stored in countries other than your own. Where required, we will take appropriate compliance steps.',
     ],
   },
   {
     id: 'changes',
-    title: 'Changes to These Terms',
+    title: 'Changes to This Policy',
     body: [
-      'We may update these Terms and will post the revised Last Updated date. Continued use after changes become effective constitutes acceptance where legally permitted.',
+      'We may update this Privacy Policy and will revise the Last Updated date when changes are made.',
     ],
   },
 ];
@@ -154,13 +126,12 @@ const CONTACT = {
   items: [
     { icon: Building2, label: 'Company', value: 'Nexus Ventures LLC' },
     { icon: Globe, label: 'Website', value: 'https://zyphoriz.com', href: 'https://zyphoriz.com' },
-    { icon: Mail, label: 'Email', value: 'contact.zyphoriz@gmail.com', href: 'mailto:contact.zyphoriz@gmail.com' },
+  { icon: Mail, label: 'Email', value: 'contact.zyphoriz@gmail.com', href: 'mailto:contact.zyphoriz@gmail.com' },
     { icon: MapPin, label: 'Address', value: 'NEXUS VENTURES LLC, 2nd Floor,Flat No.: 235, Binnamangala, Indiranagar,Bengaluru, 560038' },
-   
   ],
 };
 
-export const Terms = () => (
+export const PrivacyPolicy = () => (
   <main className="w-full min-h-screen bg-[#16292C] text-white px-4 py-12 md:px-8 md:py-16 relative overflow-hidden">
     {/* Ambient glow */}
     <div className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(circle_at_12%_0%,rgba(20,184,166,0.14),transparent_42%),radial-gradient(circle_at_88%_100%,rgba(232,162,61,0.08),transparent_50%)]" />
@@ -198,7 +169,7 @@ export const Terms = () => (
           <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center">
-                <FileText className="w-4 h-4 text-[#5eead4]" />
+                <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
               </div>
               <p className="font-headline text-sm font-bold text-white">Contents</p>
             </div>
@@ -218,7 +189,7 @@ export const Terms = () => (
                 href={`#${CONTACT.id}`}
                 className="block text-xs font-sans text-white/60 hover:text-[#5eead4] hover:bg-white/[0.04] rounded-md px-2 py-1.5 transition-colors"
               >
-                <span className="text-white/35 font-mono mr-1.5">19.</span>
+                <span className="text-white/35 font-mono mr-1.5">12.</span>
                 {CONTACT.title}
               </a>
             </nav>
@@ -230,12 +201,12 @@ export const Terms = () => (
           {/* Header */}
           <div className="pb-8 border-b border-white/10 mb-10">
             <span className="inline-flex items-center gap-1.5 bg-[#14b8a6]/15 text-[#5eead4] border border-[#14b8a6]/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.16em] mb-4">
-              <FileText className="w-3 h-3" />
-              Legal
+              <ShieldCheck className="w-3 h-3" />
+              Privacy
             </span>
 
             <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              Terms and Conditions
+              Privacy Policy
             </h1>
 
             <p className="mt-3 font-sans text-sm text-white/50">
@@ -243,9 +214,10 @@ export const Terms = () => (
             </p>
 
             <p className="mt-6 font-sans text-sm leading-7 text-white/75 max-w-3xl">
-              These Terms and Conditions govern your access to and use of the Zyphoriz website,
-              platform, applications, and related services. By accessing or using Zyphoriz, you
-              agree to these terms.
+              Welcome to Zyphoriz (“Zyphoriz,” “we,” “us,” or “our”). We respect your privacy and
+              are committed to protecting your personal information. This Privacy Policy explains
+              how we collect, use, disclose, and protect information when you visit our website,
+              use our platform, or interact with our services.
             </p>
           </div>
 
@@ -279,6 +251,24 @@ export const Terms = () => (
                   </div>
                 )}
 
+                {section.blocks && (
+                  <div className="pl-11 space-y-4">
+                    {section.blocks.map(({ subtitle, body }) => (
+                      <div
+                        key={subtitle}
+                        className="bg-white/[0.03] border border-white/10 rounded-xl p-4"
+                      >
+                        <p className="font-sans text-[11px] font-bold uppercase tracking-[0.14em] text-[#5eead4] mb-2">
+                          {subtitle}
+                        </p>
+                        <p className="font-sans text-sm leading-7 text-white/70">
+                          {body}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {section.bullets && (
                   <ul className="pl-11 mt-1 space-y-2">
                     {section.bullets.map((item) => (
@@ -295,14 +285,14 @@ export const Terms = () => (
               </section>
             ))}
 
-            {/* Contact Us — structured card */}
+            {/* Contact Us */}
             <section
               id={CONTACT.id}
               className="scroll-mt-24 border-t border-white/10 pt-6"
             >
               <div className="flex items-start gap-3 mb-4">
                 <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 text-[#5eead4] font-mono text-xs font-bold flex items-center justify-center mt-0.5">
-                  19
+                  12
                 </span>
                 <h2 className="font-headline text-lg md:text-xl font-bold text-white pt-1">
                   {CONTACT.title}
@@ -346,12 +336,15 @@ export const Terms = () => (
                   })}
                 </div>
 
-                
+                <p className="font-sans text-xs text-white/50 mt-4">
+                  Please replace the placeholders above with your actual registered business
+                  details before publishing.
+                </p>
               </div>
             </section>
           </div>
 
-          {/* Bottom CTA — List your business */}
+          {/* Bottom CTA */}
           <section className="mt-12 pt-8 border-t border-white/10">
             <div className="relative overflow-hidden rounded-2xl px-6 py-8 md:px-10 md:py-10 border border-white/10
                             bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#b94630_130%)]

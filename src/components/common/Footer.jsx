@@ -82,7 +82,7 @@ export const Footer = () => {
         {/* Legal */}
         <div className="flex flex-col gap-3">
           <h4 className="font-headline text-sm font-bold text-[#E8A23D]">Support</h4>
-          <a href="#" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Privacy Policy</a>
+          <Link to="/privacy" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Privacy Policy</Link>
           <Link to="/about" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">About ZYPHORIZ</Link>
           <Link to="/contact" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Contact Us</Link>
           <Link to="/terms" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Terms &amp; Conditions</Link>

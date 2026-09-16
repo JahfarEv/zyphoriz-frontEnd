@@ -579,7 +579,7 @@ export const BusinessProfile = () => {
     ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
     : '';
 
-  const shareUrl = `${window.location.origin}/business/${business.slug}`;
+  const shareUrl = `${window.location.origin}/${business.slug}`;
   const shareImage = business.coverImage || business.image || `${window.location.origin}/default-business-image.jpg`;
   const shareTitle = `${business.name} | Zyphoriz`;
   const shareDescription = business.description || `Discover ${business.name} on Zyphoriz.`;

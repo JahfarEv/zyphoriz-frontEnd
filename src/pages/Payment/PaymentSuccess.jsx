@@ -7,10 +7,10 @@ export const PaymentSuccess = () => {
   const { formData } = useRegistration();
   const txnId = `ZYP-${Math.floor(10000000 + Math.random() * 90000000)}`;
   const slug = formData.slug || 'your-business';
-  const businessUrl = `zyphoriz.in/${slug}`;
+  const businessUrl = `${window.location.host}/${slug}`;
 
   const copyUrl = () => {
-    navigator.clipboard?.writeText(`https://${businessUrl}`);
+    navigator.clipboard?.writeText(`${window.location.protocol}//${businessUrl}`);
   };
 
   return (

@@ -90,7 +90,7 @@
 
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, Store, ShieldCheck, Copy, ExternalLink } from 'lucide-react';
 import { useRegistration } from '../../context/RegistrationContext';
 
@@ -99,8 +99,12 @@ const ACCENT_SOFT = '#5eead4';
 
 export const PaymentSuccess = () => {
   const { formData } = useRegistration();
-  const txnId = `ZYP-${Math.floor(10000000 + Math.random() * 90000000)}`;
-  const slug = formData.slug || 'your-business';
+  const { state } = useLocation();
+  const business = state?.business;
+  const payment = state?.payment;
+  const txnId = payment?.transactionId || 'Processing';
+  const slug = business?.slug || formData.slug || 'your-business';
+  const businessName = business?.name || formData.name || 'Your business';
   const businessUrl = `${window.location.host}/${slug}`;
 
   const copyUrl = () => {
@@ -127,7 +131,7 @@ export const PaymentSuccess = () => {
               You're Live! 🎉
             </h1>
             <p className="font-sans text-sm text-white/70 mt-2 max-w-sm mx-auto leading-relaxed">
-              <span className="font-bold text-white">{formData.name || 'Your business'}</span> is now listed on zyphoriz and discoverable by thousands of local customers.
+              <span className="font-bold text-white">{businessName}</span> is now listed on zyphoriz and discoverable by thousands of local customers.
             </p>
           </div>
 

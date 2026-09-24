@@ -19,24 +19,39 @@ export default function PaymentCallback() {
       }
 
       try {
-        const result = await api.payments.checkout({
-          businessId,
-          orderId,
-        });
+        let lastError;
 
-        if (result.payment?.status === 'success') {
-          sessionStorage.removeItem('pendingBusinessId');
-          sessionStorage.removeItem('pendingOrderId');
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          try {
+            const result = await api.payments.checkout({
+              businessId,
+              orderId,
+            });
 
-          navigate('/payment/success', {
-            replace: true,
-            state: result,
-          });
-        } else {
+            if (result.payment?.status === 'success') {
+              sessionStorage.removeItem('pendingBusinessId');
+              sessionStorage.removeItem('pendingOrderId');
+
+              navigate('/payment/success', {
+                replace: true,
+                state: result,
+              });
+              return;
+            }
+          } catch (error) {
+            lastError = error;
+          }
+
           setMessage(
-            'Your payment is not confirmed yet. Please check again shortly.'
+            'Payment received. Waiting for Cashfree to confirm it...'
           );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
+
+        setMessage(
+          lastError?.message ||
+          'Payment confirmation is taking longer than expected. Please refresh this page shortly.'
+        );
       } catch (error) {
         setMessage(
           error.message || 'Unable to verify payment. Please try again.'

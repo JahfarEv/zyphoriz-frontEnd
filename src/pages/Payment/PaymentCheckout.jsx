@@ -482,6 +482,15 @@ export const PaymentCheckout = () => {
         );
       }
 
+      sessionStorage.setItem(
+        'pendingBusinessId',
+        business._id
+      );
+      sessionStorage.setItem(
+        'pendingOrderId',
+        orderId
+      );
+
       // ----------------------------------------------
       // 4. Initialize Cashfree
       // ----------------------------------------------

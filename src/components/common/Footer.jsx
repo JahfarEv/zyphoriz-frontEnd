@@ -74,7 +74,6 @@ export const Footer = () => {
         <div className="flex flex-col gap-3">
           <h4 className="font-headline text-sm font-bold text-[#E8A23D]">For Business</h4>
           <Link to="/create" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">List Your Business</Link>
-          <span className="font-sans text-xs text-[#FBF6EC]/70">₹499</span>
           <span className="font-sans text-xs text-[#FBF6EC]/70">Verified Badge</span>
           <span className="font-sans text-xs text-[#FBF6EC]/70">Your Own URL</span>
         </div>

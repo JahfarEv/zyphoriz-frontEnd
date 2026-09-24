@@ -610,6 +610,7 @@ import {
 import { useRegistration } from '../../context/RegistrationContext';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
+import { DEFAULT_TEMPLATE, TEMPLATE_OPTIONS, getTemplateConfig } from '../../data/templates';
 
 const toSlug = (name) =>
   name
@@ -658,6 +659,7 @@ export const CreateBusiness = () => {
     bannerFile: null,
     galleryImages: [],
     galleryFiles: [],
+    template: DEFAULT_TEMPLATE,
     openingHours: defaultOpeningHours,
   }));
 
@@ -721,6 +723,7 @@ export const CreateBusiness = () => {
         facebook: form.facebook,
         youtube: form.youtube,
         video: form.video,
+        template: form.template || DEFAULT_TEMPLATE,
         openingHours: JSON.stringify(form.openingHours),
       };
       Object.entries(fields).forEach(([key, value]) => payload.append(key, value || ''));
@@ -740,6 +743,7 @@ export const CreateBusiness = () => {
       categoryName: selectedCat?.name || form.category,
       selectedPlan: 'standard',
       planPrice: '₹499/yr',
+      template: form.template || DEFAULT_TEMPLATE,
     });
     // This goes to payment checkout since it's the CreateBusiness flow
     navigate('/payment/checkout');
@@ -781,6 +785,7 @@ export const CreateBusiness = () => {
   };
 
   const slug = form.name ? toSlug(form.name) : '';
+  const selectedTemplate = getTemplateConfig(form.template || DEFAULT_TEMPLATE);
 
   return (
     <div className="w-full min-h-screen bg-[linear-gradient(135deg,#16292c_0%,#2f756d_58%,#b94630_100%)] relative overflow-hidden">
@@ -828,6 +833,45 @@ export const CreateBusiness = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Template Picker */}
+      <div className="mb-8 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <p className="font-sans text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Template</p>
+            <h2 className="font-headline text-xl font-bold text-on-surface">Choose your design</h2>
+          </div>
+          <div className="px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-bold">
+            {selectedTemplate.name}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {TEMPLATE_OPTIONS.map((template) => {
+            const isSelected = (form.template || DEFAULT_TEMPLATE) === template.id;
+            return (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, template: template.id }))}
+                className={`text-left rounded-2xl border p-3 transition-all ${
+                  isSelected
+                    ? 'border-secondary bg-secondary/5 shadow-[0_10px_24px_-18px_rgba(0,0,0,0.5)]'
+                    : 'border-outline-variant/30 bg-background hover:border-secondary/40'
+                }`}
+              >
+                <div className="h-20 rounded-xl mb-3" style={{ background: template.gradient }} />
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-sans text-sm font-bold text-on-surface">{template.name}</p>
+                    <p className="font-sans text-xs text-on-surface-variant">{template.description}</p>
+                  </div>
+                  {isSelected && <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0" />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Form */}

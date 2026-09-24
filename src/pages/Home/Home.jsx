@@ -1244,82 +1244,562 @@
 
 
 
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
+// import { Link } from 'react-router-dom';
+// import {
+//   ArrowRight,
+//   PlusCircle,
+//   Search,
+//   SlidersHorizontal,
+//   X,
+//   Sparkles,
+//   TrendingUp,
+//   Star,
+//   Globe,
+//   ShieldCheck,
+//   Phone,
+// } from 'lucide-react';
+// import { BusinessCard } from '../../components/business/BusinessCard';
+// import { api } from '../../lib/api';
+
+// const ACCENT = '#14b8a6';
+// const ACCENT_SOFT = '#5eead4';
+// const AMBER = '#E8A23D';
+
+// export const Home = () => {
+//   const [activeCategory, setActiveCategory] = useState(null);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [showFilters, setShowFilters] = useState(false);
+//   const [businesses, setBusinesses] = useState([]);
+//   const [categories, setCategories] = useState([]);
+//   const [categoryPage, setCategoryPage] = useState(1);
+//   const [categoryPagination, setCategoryPagination] = useState({ pages: 1 });
+//   const [businessPage, setBusinessPage] = useState(1);
+//   const [businessPagination, setBusinessPagination] = useState({ total: 0, pages: 1 });
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState('');
+
+//   useEffect(() => {
+//     api.categories.list(`?page=${categoryPage}&limit=8`)
+//       .then((data) => {
+//         setCategories(data.categories || []);
+//         setCategoryPagination(data.pagination || { pages: 1 });
+//       })
+//       .catch(() => {});
+//   }, [categoryPage]);
+
+//   useEffect(() => {
+//     setLoading(true);
+//     setError('');
+//     const params = new URLSearchParams({ page: businessPage, limit: 9 });
+//     if (activeCategory) params.set('category', activeCategory);
+//     if (searchQuery.trim()) params.set('q', searchQuery.trim());
+//     api.businesses.list(`?${params.toString()}`)
+//       .then((data) => {
+//         setBusinesses(data.businesses || []);
+//         setBusinessPagination(data.pagination || { total: 0, pages: 1 });
+//       })
+//       .catch((requestError) => setError(requestError.message))
+//       .finally(() => setLoading(false));
+//   }, [activeCategory, businessPage, searchQuery]);
+
+//   const activeCategoryName = activeCategory
+//     ? categories.find((c) => c.id === activeCategory)?.name
+//     : null;
+
+//   const changeSearch = (value) => {
+//     setSearchQuery(value);
+//     setBusinessPage(1);
+//   };
+
+//   const selectCategory = (categoryId) => {
+//     setActiveCategory(categoryId);
+//     setBusinessPage(1);
+//   };
+
+//   return (
+//     <div className="w-full min-h-screen bg-[#16292C] text-white">
+//       {/* Hero */}
+//       <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden">
+//         <div
+//           className="absolute inset-0 opacity-[0.14]"
+//           style={{
+//             backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+//         <div className="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_50%_20%,rgba(20,184,166,0.18),transparent_55%)]" />
+
+//         <div className="max-w-4xl mx-auto text-center relative z-10">
+//           <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
+//             <Sparkles className="w-4 h-4" />
+//             Discover amazing local businesses
+//           </div>
+
+//           <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-white mb-3 leading-tight">
+//             Find local businesses
+//             <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent">
+//               &amp; shops near you
+//             </span>
+//           </h1>
+//           <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
+
+//           <p className="font-sans text-lg text-white/70 mb-10 max-w-2xl mx-auto">
+//             Browse trusted businesses by category — restaurants, medical, beauty, electronics &amp; more.
+//           </p>
+
+//           <div className="relative max-w-xl mx-auto mb-8">
+//             <div className="relative bg-white/[0.06] backdrop-blur-md rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] border border-white/15 focus-within:border-[#14b8a6]/60 transition-colors">
+//               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+//               <input
+//                 type="text"
+//                 value={searchQuery}
+//                 onChange={(e) => changeSearch(e.target.value)}
+//                 placeholder="Search businesses, shops, services..."
+//                 className="w-full pl-12 pr-12 py-4 bg-transparent rounded-2xl font-sans text-sm text-white placeholder:text-white/40 focus:outline-none"
+//               />
+//               {searchQuery && (
+//                 <button
+//                   onClick={() => changeSearch('')}
+//                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+//                 >
+//                   <X className="w-4 h-4" />
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+
+//           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+//             <Link
+//               to="/create"
+//               className="inline-flex items-center gap-2 text-white font-sans font-bold px-8 py-4 rounded-2xl transition-all duration-200 text-base
+//                          bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
+//                          hover:from-[#0d6b64] hover:to-[#0ea5a0]
+//                          shadow-[0_18px_40px_-14px_rgba(20,184,166,0.7)]
+//                          active:scale-[0.98]"
+//             >
+//               <PlusCircle className="w-5 h-5" />
+//               List your business — ₹499
+//             </Link>
+//           </div>
+
+//           <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-white/10">
+//             <div>
+//               <div className="text-2xl font-bold text-[#5eead4]">500+</div>
+//               <div className="text-sm text-white/60">Listings</div>
+//             </div>
+//             <div>
+//               <div className="text-2xl font-bold text-[#E8A23D]">50+</div>
+//               <div className="text-sm text-white/60">Categories</div>
+//             </div>
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Business Listings */}
+//       <section
+//         id="businesses"
+//         className="relative w-full py-10 px-4 md:px-8 pb-20 border-t border-white/10"
+//       >
+//         <div
+//           className="absolute inset-0 opacity-[0.08] pointer-events-none"
+//           style={{
+//             backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+
+//         <button
+//           onClick={() => setShowFilters(!showFilters)}
+//           className="relative lg:hidden inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-xl bg-white/[0.06] border border-white/15 backdrop-blur-md font-sans text-sm font-semibold text-white hover:bg-white/[0.1] transition-all"
+//         >
+//           <SlidersHorizontal className="w-4 h-4" /> Filters
+//           {activeCategory && <span className="w-2 h-2 rounded-full bg-[#14b8a6]" />}
+//         </button>
+
+//         <div className="relative flex flex-col lg:flex-row gap-8 items-start">
+       
+//           <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
+//             <div className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6 lg:sticky lg:top-24 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
+//               <div className="flex items-center justify-between mb-6">
+//                 <h2 className="font-headline text-lg font-bold text-white flex items-center gap-2">
+//                   <span className="w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center">
+//                     <TrendingUp className="w-4 h-4 text-[#5eead4]" />
+//                   </span>
+//                   Categories
+//                 </h2>
+//                 {activeCategory && (
+//                   <button
+//                     onClick={() => selectCategory(null)}
+//                     className="text-xs font-semibold text-[#5eead4] hover:underline"
+//                   >
+//                     Clear
+//                   </button>
+//                 )}
+//               </div>
+
+//               <div className="space-y-1.5">
+//                 <button
+//                   onClick={() => selectCategory(null)}
+//                   className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 border-l-4 ${
+//                     !activeCategory
+//                       ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
+//                       : 'text-white/70 hover:bg-white/[0.06] border-transparent'
+//                   }`}
+//                 >
+//                   <span
+//                     className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+//                       !activeCategory ? 'bg-white/15 text-white' : 'bg-white/[0.06] text-white/60'
+//                     }`}
+//                   >
+//                     ★
+//                   </span>
+//                   All businesses
+//                 </button>
+
+//                 {categories.map((category) => {
+//                   const isActive = activeCategory === category.id;
+//                   return (
+//                     <button
+//                       key={category.id}
+//                       onClick={() => selectCategory(category.id)}
+//                       className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center justify-between gap-2 border-l-4 ${
+//                         isActive
+//                           ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
+//                           : 'text-white/70 hover:bg-white/[0.06] border-transparent'
+//                       }`}
+//                     >
+//                       <span className="flex items-center gap-2.5 min-w-0">
+//                         <span
+//                           className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+//                             isActive
+//                               ? 'bg-white/15 text-white'
+//                               : 'bg-[#E8A23D]/15 text-[#E8A23D]'
+//                           }`}
+//                         >
+//                           {category.name.charAt(0).toUpperCase()}
+//                         </span>
+//                         <span className="truncate">{category.name}</span>
+//                       </span>
+//                       {typeof category.count === 'number' && (
+//                         <span
+//                           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+//                             isActive
+//                               ? 'bg-white/15 text-white'
+//                               : 'bg-white/[0.06] text-white/60'
+//                           }`}
+//                         >
+//                           {category.count}
+//                         </span>
+//                       )}
+//                     </button>
+//                   );
+//                 })}
+//               </div>
+
+//               {categoryPagination.pages > 1 && (
+//                 <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t border-white/10">
+//                   <button
+//                     type="button"
+//                     onClick={() => setCategoryPage((page) => Math.max(page - 1, 1))}
+//                     disabled={categoryPage === 1}
+//                     className="text-xs font-semibold text-white/70 hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+//                   >
+//                     Previous
+//                   </button>
+//                   <span className="text-[11px] text-white/50">
+//                     {categoryPage} / {categoryPagination.pages}
+//                   </span>
+//                   <button
+//                     type="button"
+//                     onClick={() =>
+//                       setCategoryPage((page) => Math.min(page + 1, categoryPagination.pages))
+//                     }
+//                     disabled={categoryPage >= categoryPagination.pages}
+//                     className="text-xs font-semibold text-[#5eead4] hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+//                   >
+//                     Next
+//                   </button>
+//                 </div>
+//               )}
+//             </div>
+//           </aside>
+
+       
+//           <div className="flex-1 min-w-0 w-full">
+//             <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+//               <div>
+//                 <h2 className="font-headline text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+//                   {activeCategoryName || 'All businesses'}
+//                   <span className="text-sm font-normal text-white/70 bg-white/[0.06] border border-white/10 px-3 py-1 rounded-full">
+//                     {loading ? '...' : businessPagination.total}
+//                   </span>
+//                 </h2>
+//                 <p className="font-sans text-sm text-white/60 mt-1">
+//                   {searchQuery && `Showing results for "${searchQuery}"`}
+//                 </p>
+//               </div>
+//             </div>
+
+//             {error ? (
+//               <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
+//                 <h3 className="font-headline text-xl font-bold text-white mb-2">
+//                   Unable to load businesses
+//                 </h3>
+//                 <p className="font-sans text-sm text-white/50">{error}</p>
+//               </div>
+//             ) : loading ? (
+//               <div className="text-center py-20 text-white/60">Loading businesses...</div>
+//             ) : businesses.length === 0 ? (
+//               <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
+//                 <div className="text-6xl mb-4">🔍</div>
+//                 <h3 className="font-headline text-xl font-bold text-white mb-2">
+//                   No businesses found
+//                 </h3>
+//                 <p className="font-sans text-sm text-white/60 mb-8">
+//                   {searchQuery
+//                     ? `No results for "${searchQuery}" in this category.`
+//                     : 'No businesses listed in this category yet.'}
+//                 </p>
+//                 <Link
+//                   to="/create"
+//                   className="inline-flex items-center gap-2 text-white font-sans font-bold px-6 py-3 rounded-xl text-sm transition-all
+//                              bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
+//                              hover:from-[#0d6b64] hover:to-[#0ea5a0]
+//                              shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)]
+//                              active:scale-[0.98]"
+//                 >
+//                   <PlusCircle className="w-4 h-4" /> Be the first — list your business
+//                 </Link>
+//               </div>
+//             ) : (
+//               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+//                 {businesses.map((business) => (
+//                   <BusinessCard
+//                     key={business._id || business.id || business.slug}
+//                     business={business}
+//                   />
+//                 ))}
+//               </div>
+//             )}
+
+//             {!loading && !error && businessPagination.pages > 1 && (
+//               <div className="flex items-center justify-center gap-5 mt-8">
+//                 <button
+//                   type="button"
+//                   onClick={() => setBusinessPage((page) => Math.max(page - 1, 1))}
+//                   disabled={businessPage === 1}
+//                   className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm font-semibold hover:bg-white/[0.1] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+//                 >
+//                   Previous
+//                 </button>
+//                 <span className="text-sm font-semibold text-white/70">
+//                   Page {businessPage} of {businessPagination.pages}
+//                 </span>
+//                 <button
+//                   type="button"
+//                   onClick={() =>
+//                     setBusinessPage((page) => Math.min(page + 1, businessPagination.pages))
+//                   }
+//                   disabled={businessPage >= businessPagination.pages}
+//                   className="px-4 py-2 rounded-xl text-[#16292C] text-sm font-semibold shadow-[0_10px_25px_-10px_rgba(232,162,61,0.7)] disabled:opacity-40 disabled:cursor-not-allowed transition-transform hover:scale-[1.03] bg-[#E8A23D] hover:bg-[#F4C874]"
+//                 >
+//                   Next
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </section>
+
+//       {/* Bottom CTA */}
+//       <section className="relative py-16 px-4 md:px-8 overflow-hidden bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#b94630_100%)] shadow-[0_-12px_30px_rgba(22,41,44,0.35)]">
+//         <div
+//           className="absolute inset-0 opacity-[0.1] pointer-events-none"
+//           style={{
+//             backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
+//             backgroundSize: '22px 22px',
+//           }}
+//         />
+//         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border-[24px] border-white/10" />
+//         <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full border-[28px] border-white/10" />
+
+//         <div className="max-w-3xl mx-auto text-center relative z-10">
+//           <div className="inline-flex items-center gap-2 bg-[#FBF6EC] text-[#B94630] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-lg">
+//             <Star className="w-4 h-4 fill-current" />
+//             Join 500+ business owners
+//           </div>
+
+//           <h2 className="font-headline text-3xl md:text-4xl font-bold text-white mb-4">
+//             Own a business?
+//           </h2>
+//           <p className="font-sans text-lg text-white/90 mb-8 max-w-xl mx-auto">
+//             Get discovered by thousands of local customers for just ₹499.
+//           </p>
+
+//           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left">
+//             {[
+//               { icon: Globe, label: 'Your own business URL', sub: 'zyphoriz.in/{name}' },
+//               { icon: ShieldCheck, label: 'Verified badge', sub: 'Trusted by customers' },
+//               { icon: Phone, label: 'Direct call & WhatsApp', sub: 'Connect instantly' },
+//             ].map(({ icon: Icon, label, sub }) => (
+//               <div
+//                 key={label}
+//                 className="bg-[#FBF6EC] rounded-xl p-4 flex items-start gap-3 shadow-md"
+//               >
+//                 <div className="w-8 h-8 rounded-lg bg-[#B94630]/10 flex items-center justify-center flex-shrink-0">
+//                   <Icon className="w-4 h-4 text-[#B94630]" />
+//                 </div>
+//                 <div>
+//                   <p className="font-sans text-xs font-semibold text-[#241F1A]">{label}</p>
+//                   <p className="font-sans text-xs text-[#241F1A]/60">{sub}</p>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+
+//           <Link
+//             to="/create"
+//             className="inline-flex items-center gap-3 bg-[#FBF6EC] text-[#B94630] font-sans font-bold px-10 py-4 rounded-2xl hover:bg-white transition-all duration-200 text-lg shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] active:scale-[0.98]"
+//           >
+//             <PlusCircle className="w-6 h-6" />
+//             List your business
+//             <ArrowRight className="w-5 h-5" />
+//           </Link>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// };
+
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   PlusCircle,
-  Search,
-  SlidersHorizontal,
-  X,
   Sparkles,
-  TrendingUp,
-  Star,
   Globe,
   ShieldCheck,
   Phone,
+  Star,
+  LayoutTemplate,
+  QrCode,
+  Edit3,
+  Share2,
+  ChevronDown,
+  BadgeCheck,
+  Palette,
+  MessageCircle,
 } from 'lucide-react';
-import { BusinessCard } from '../../components/business/BusinessCard';
-import { api } from '../../lib/api';
 
-const ACCENT = '#14b8a6';
-const ACCENT_SOFT = '#5eead4';
 const AMBER = '#E8A23D';
 
 export const Home = () => {
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [businesses, setBusinesses] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [categoryPage, setCategoryPage] = useState(1);
-  const [categoryPagination, setCategoryPagination] = useState({ pages: 1 });
-  const [businessPage, setBusinessPage] = useState(1);
-  const [businessPagination, setBusinessPagination] = useState({ total: 0, pages: 1 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [openFaq, setOpenFaq] = useState(null);
 
-  useEffect(() => {
-    api.categories.list(`?page=${categoryPage}&limit=8`)
-      .then((data) => {
-        setCategories(data.categories || []);
-        setCategoryPagination(data.pagination || { pages: 1 });
-      })
-      .catch(() => {});
-  }, [categoryPage]);
+  const steps = [
+    {
+      icon: Edit3,
+      title: 'Enter your details',
+      desc: 'Add your business name, category, contact info, and photos.',
+    },
+    {
+      icon: LayoutTemplate,
+      title: 'Pick a template',
+      desc: 'Choose from premium designs. No design skills needed.',
+    },
+    {
+      icon: Share2,
+      title: 'Share your link',
+      desc: 'Get a unique URL and QR code. Share it on WhatsApp, Instagram, or print it.',
+    },
+  ];
 
-  useEffect(() => {
-    setLoading(true);
-    setError('');
-    const params = new URLSearchParams({ page: businessPage, limit: 9 });
-    if (activeCategory) params.set('category', activeCategory);
-    if (searchQuery.trim()) params.set('q', searchQuery.trim());
-    api.businesses.list(`?${params.toString()}`)
-      .then((data) => {
-        setBusinesses(data.businesses || []);
-        setBusinessPagination(data.pagination || { total: 0, pages: 1 });
-      })
-      .catch((requestError) => setError(requestError.message))
-      .finally(() => setLoading(false));
-  }, [activeCategory, businessPage, searchQuery]);
+  const features = [
+    {
+      icon: Globe,
+      title: 'Your own business URL',
+      desc: 'Get a professional link like zyphoriz.com/yourname that you can share anywhere.',
+    },
+    {
+      icon: QrCode,
+      title: 'QR code sharing',
+      desc: 'Print it on your shop, visiting card, or packaging for instant access.',
+    },
+    {
+      icon: Phone,
+      title: 'Call & WhatsApp buttons',
+      desc: 'Let customers connect with you in one tap — no copy-pasting numbers.',
+    },
+    {
+      icon: BadgeCheck,
+      title: 'Verified badge',
+      desc: 'Build trust with a verified profile that looks professional and reliable.',
+    },
+    {
+      icon: Palette,
+      title: 'Premium templates',
+      desc: 'Choose from beautiful designs made for shops, clinics, studios, and more.',
+    },
+    {
+      icon: Edit3,
+      title: 'Unlimited edits',
+      desc: 'Update your details, offers, and photos anytime — no extra work.',
+    },
+  ];
 
-  const activeCategoryName = activeCategory
-    ? categories.find((c) => c.id === activeCategory)?.name
-    : null;
+  const templates = [
+    { name: 'Retail & Shop', color: 'from-[#0f766e] to-[#14b8a6]' },
+    { name: 'Health & Clinic', color: 'from-[#B94630] to-[#E8A23D]' },
+    { name: 'Creative & Freelance', color: 'from-[#5eead4] to-[#0f766e]' },
+  ];
 
-  const changeSearch = (value) => {
-    setSearchQuery(value);
-    setBusinessPage(1);
-  };
+  const testimonials = [
+    {
+      name: 'Rahul Sharma',
+      role: 'Owner, Sharma Electronics',
+      text: 'I created my business card in 5 minutes. Customers now call me directly from my link.',
+    },
+    {
+      name: 'Priya Mehta',
+      role: 'Freelance Designer',
+      text: 'The templates look premium. I shared my link on Instagram and started getting inquiries.',
+    },
+    {
+      name: 'Amit Verma',
+      role: 'Local Grocery Store',
+      text: 'The QR code is on my shop counter. It is so easy for customers to reach me.',
+    },
+  ];
 
-  const selectCategory = (categoryId) => {
-    setActiveCategory(categoryId);
-    setBusinessPage(1);
-  };
+  const faqs = [
+    {
+      q: 'Do I need a website to use this?',
+      a: 'No. We host your business card and landing page for you. You just share your link.',
+    },
+    {
+      q: 'Can I edit my card later?',
+      a: 'Yes. You can update your details, photos, and links anytime.',
+    },
+    {
+      q: 'How do customers find me?',
+      a: 'Share your unique link or QR code on WhatsApp, Instagram, Google, or print it on your shop.',
+    },
+    {
+      q: 'Is it suitable for local shops?',
+      a: 'Absolutely. It is built for local shops, professionals, freelancers, and service providers.',
+    },
+    {
+      q: 'What do I get with my card?',
+      a: 'A mobile-friendly business page, call and WhatsApp buttons, verified badge, QR code, and premium templates.',
+    },
+  ];
 
   return (
     <div className="w-full min-h-screen bg-[#16292C] text-white">
-      {/* Hero */}
+      {/* ============================= */}
+      {/* HERO */}
+      {/* ============================= */}
       <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.14]"
@@ -1333,41 +1813,22 @@ export const Home = () => {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
             <Sparkles className="w-4 h-4" />
-            Discover amazing local businesses
+            Built for business owners, shops &amp; professionals
           </div>
 
           <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-white mb-3 leading-tight">
-            Find local businesses
+            Create your business card
             <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent">
-              &amp; shops near you
+              &amp; landing page in minutes
             </span>
           </h1>
+
           <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
 
           <p className="font-sans text-lg text-white/70 mb-10 max-w-2xl mx-auto">
-            Browse trusted businesses by category — restaurants, medical, beauty, electronics &amp; more.
+            For local shops, professionals, and freelancers. No coding. No design
+            skills. Just share your link.
           </p>
-
-          <div className="relative max-w-xl mx-auto mb-8">
-            <div className="relative bg-white/[0.06] backdrop-blur-md rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] border border-white/15 focus-within:border-[#14b8a6]/60 transition-colors">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => changeSearch(e.target.value)}
-                placeholder="Search businesses, shops, services..."
-                className="w-full pl-12 pr-12 py-4 bg-transparent rounded-2xl font-sans text-sm text-white placeholder:text-white/40 focus:outline-none"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => changeSearch('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -1379,27 +1840,46 @@ export const Home = () => {
                          active:scale-[0.98]"
             >
               <PlusCircle className="w-5 h-5" />
-              List your business — ₹499
+              Create your business card
+              <ArrowRight className="w-5 h-5" />
             </Link>
+
+            <a
+              href="#how-it-works"
+              className="inline-flex items-center gap-2 text-white/80 font-sans font-semibold px-6 py-4 rounded-2xl border border-white/15 hover:bg-white/[0.06] transition-all"
+            >
+              See how it works
+            </a>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 mt-6 text-sm text-white/50">
+            <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
+            Trusted by 500+ business owners
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-white/10">
             <div>
               <div className="text-2xl font-bold text-[#5eead4]">500+</div>
-              <div className="text-sm text-white/60">Listings</div>
+              <div className="text-sm text-white/60">Businesses</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-[#E8A23D]">50+</div>
               <div className="text-sm text-white/60">Categories</div>
             </div>
+            <div>
+              <div className="text-2xl font-bold text-[#5eead4]">2 min</div>
+              <div className="text-sm text-white/60">Setup time</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Business Listings */}
+      {/* ============================= */}
+      {/* HOW IT WORKS */}
+      {/* ============================= */}
       <section
-        id="businesses"
-        className="relative w-full py-10 px-4 md:px-8 pb-20 border-t border-white/10"
+        id="how-it-works"
+        className="relative py-16 px-4 md:px-8 border-t border-white/10"
       >
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none"
@@ -1409,210 +1889,206 @@ export const Home = () => {
           }}
         />
 
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="relative lg:hidden inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-xl bg-white/[0.06] border border-white/15 backdrop-blur-md font-sans text-sm font-semibold text-white hover:bg-white/[0.1] transition-all"
-        >
-          <SlidersHorizontal className="w-4 h-4" /> Filters
-          {activeCategory && <span className="w-2 h-2 rounded-full bg-[#14b8a6]" />}
-        </button>
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
+              How it works
+            </h2>
+            <p className="font-sans text-white/60 max-w-2xl mx-auto">
+              Three simple steps to get your business online and shareable.
+            </p>
+          </div>
 
-        <div className="relative flex flex-col lg:flex-row gap-8 items-start">
-          {/* Sidebar */}
-          <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
-            <div className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6 lg:sticky lg:top-24 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-headline text-lg font-bold text-white flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-[#5eead4]" />
-                  </span>
-                  Categories
-                </h2>
-                {activeCategory && (
-                  <button
-                    onClick={() => selectCategory(null)}
-                    className="text-xs font-semibold text-[#5eead4] hover:underline"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <button
-                  onClick={() => selectCategory(null)}
-                  className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center gap-2.5 border-l-4 ${
-                    !activeCategory
-                      ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
-                      : 'text-white/70 hover:bg-white/[0.06] border-transparent'
-                  }`}
-                >
-                  <span
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                      !activeCategory ? 'bg-white/15 text-white' : 'bg-white/[0.06] text-white/60'
-                    }`}
-                  >
-                    ★
-                  </span>
-                  All businesses
-                </button>
-
-                {categories.map((category) => {
-                  const isActive = activeCategory === category.id;
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => selectCategory(category.id)}
-                      className={`w-full text-left pl-3 pr-4 py-2.5 rounded-xl text-sm transition-all duration-150 flex items-center justify-between gap-2 border-l-4 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-[#0f766e]/60 to-[#14b8a6]/30 text-white font-semibold border-[#E8A23D]'
-                          : 'text-white/70 hover:bg-white/[0.06] border-transparent'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2.5 min-w-0">
-                        <span
-                          className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                            isActive
-                              ? 'bg-white/15 text-white'
-                              : 'bg-[#E8A23D]/15 text-[#E8A23D]'
-                          }`}
-                        >
-                          {category.name.charAt(0).toUpperCase()}
-                        </span>
-                        <span className="truncate">{category.name}</span>
-                      </span>
-                      {typeof category.count === 'number' && (
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                            isActive
-                              ? 'bg-white/15 text-white'
-                              : 'bg-white/[0.06] text-white/60'
-                          }`}
-                        >
-                          {category.count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {categoryPagination.pages > 1 && (
-                <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setCategoryPage((page) => Math.max(page - 1, 1))}
-                    disabled={categoryPage === 1}
-                    className="text-xs font-semibold text-white/70 hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-[11px] text-white/50">
-                    {categoryPage} / {categoryPagination.pages}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCategoryPage((page) => Math.min(page + 1, categoryPagination.pages))
-                    }
-                    disabled={categoryPage >= categoryPagination.pages}
-                    className="text-xs font-semibold text-[#5eead4] hover:text-white disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                  </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map(({ icon: Icon, title, desc }, index) => (
+              <div
+                key={title}
+                className="relative bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center mx-auto mb-4">
+                  <Icon className="w-6 h-6 text-[#5eead4]" />
                 </div>
-              )}
-            </div>
-          </aside>
-
-          {/* Listings */}
-          <div className="flex-1 min-w-0 w-full">
-            <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-              <div>
-                <h2 className="font-headline text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                  {activeCategoryName || 'All businesses'}
-                  <span className="text-sm font-normal text-white/70 bg-white/[0.06] border border-white/10 px-3 py-1 rounded-full">
-                    {loading ? '...' : businessPagination.total}
-                  </span>
-                </h2>
-                <p className="font-sans text-sm text-white/60 mt-1">
-                  {searchQuery && `Showing results for "${searchQuery}"`}
-                </p>
+                <div className="absolute top-4 right-4 text-xs font-bold text-white/30">
+                  0{index + 1}
+                </div>
+                <h3 className="font-headline text-xl font-bold mb-2">{title}</h3>
+                <p className="font-sans text-sm text-white/60">{desc}</p>
               </div>
-            </div>
-
-            {error ? (
-              <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
-                <h3 className="font-headline text-xl font-bold text-white mb-2">
-                  Unable to load businesses
-                </h3>
-                <p className="font-sans text-sm text-white/50">{error}</p>
-              </div>
-            ) : loading ? (
-              <div className="text-center py-20 text-white/60">Loading businesses...</div>
-            ) : businesses.length === 0 ? (
-              <div className="text-center py-20 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="font-headline text-xl font-bold text-white mb-2">
-                  No businesses found
-                </h3>
-                <p className="font-sans text-sm text-white/60 mb-8">
-                  {searchQuery
-                    ? `No results for "${searchQuery}" in this category.`
-                    : 'No businesses listed in this category yet.'}
-                </p>
-                <Link
-                  to="/create"
-                  className="inline-flex items-center gap-2 text-white font-sans font-bold px-6 py-3 rounded-xl text-sm transition-all
-                             bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
-                             hover:from-[#0d6b64] hover:to-[#0ea5a0]
-                             shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)]
-                             active:scale-[0.98]"
-                >
-                  <PlusCircle className="w-4 h-4" /> Be the first — list your business
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {businesses.map((business) => (
-                  <BusinessCard
-                    key={business._id || business.id || business.slug}
-                    business={business}
-                  />
-                ))}
-              </div>
-            )}
-
-            {!loading && !error && businessPagination.pages > 1 && (
-              <div className="flex items-center justify-center gap-5 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setBusinessPage((page) => Math.max(page - 1, 1))}
-                  disabled={businessPage === 1}
-                  className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm font-semibold hover:bg-white/[0.1] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  Previous
-                </button>
-                <span className="text-sm font-semibold text-white/70">
-                  Page {businessPage} of {businessPagination.pages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBusinessPage((page) => Math.min(page + 1, businessPagination.pages))
-                  }
-                  disabled={businessPage >= businessPagination.pages}
-                  className="px-4 py-2 rounded-xl text-[#16292C] text-sm font-semibold shadow-[0_10px_25px_-10px_rgba(232,162,61,0.7)] disabled:opacity-40 disabled:cursor-not-allowed transition-transform hover:scale-[1.03] bg-[#E8A23D] hover:bg-[#F4C874]"
-                >
-                  Next
-                </button>
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Bottom CTA */}
+      {/* ============================= */}
+      {/* FEATURES */}
+      {/* ============================= */}
+      <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
+              Everything you need to get discovered
+            </h2>
+            <p className="font-sans text-white/60 max-w-2xl mx-auto">
+              A complete business profile that works like a mini website —
+              without the cost or complexity.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6 hover:border-[#14b8a6]/40 transition-all duration-200"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-[#5eead4]" />
+                </div>
+                <h3 className="font-headline text-lg font-bold text-white mb-2">
+                  {title}
+                </h3>
+                <p className="font-sans text-sm text-white/60 leading-relaxed">
+                  {desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================= */}
+      {/* TEMPLATES PREVIEW */}
+      {/* ============================= */}
+      <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
+              Premium templates for every business
+            </h2>
+            <p className="font-sans text-white/60 max-w-2xl mx-auto">
+              Whether you run a shop, clinic, salon, or freelance service — there
+              is a design that fits.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {templates.map((template) => (
+              <div
+                key={template.name}
+                className="group relative rounded-2xl border border-white/10 bg-white/[0.04] p-4 hover:border-[#14b8a6]/40 transition-all"
+              >
+                <div
+                  className={`h-48 rounded-xl bg-gradient-to-br ${template.color} mb-4 flex items-center justify-center`}
+                >
+                  <LayoutTemplate className="w-12 h-12 text-white/80" />
+                </div>
+                <h3 className="font-headline text-lg font-bold text-white">
+                  {template.name}
+                </h3>
+                <p className="font-sans text-sm text-white/50">
+                  Mobile-friendly layout
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================= */}
+      {/* TESTIMONIALS */}
+      {/* ============================= */}
+      <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
+              Loved by local business owners
+            </h2>
+            <p className="font-sans text-white/60 max-w-2xl mx-auto">
+              Here is what early users are saying about their experience.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((item) => (
+              <div
+                key={item.name}
+                className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6"
+              >
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="w-4 h-4 text-[#E8A23D] fill-current"
+                    />
+                  ))}
+                </div>
+                <p className="font-sans text-sm text-white/70 leading-relaxed mb-6">
+                  &ldquo;{item.text}&rdquo;
+                </p>
+                <div>
+                  <p className="font-sans text-sm font-bold text-white">
+                    {item.name}
+                  </p>
+                  <p className="font-sans text-xs text-white/50">{item.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================= */}
+      {/* FAQ */}
+      {/* ============================= */}
+      <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
+              Frequently asked questions
+            </h2>
+            <p className="font-sans text-white/60">
+              Everything you need to know before creating your business card.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div
+                  key={faq.q}
+                  className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
+                  >
+                    <span className="font-sans text-sm md:text-base font-semibold text-white">
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-[#5eead4] flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-6 pb-5">
+                      <p className="font-sans text-sm text-white/60 leading-relaxed">
+                        {faq.a}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================= */}
+      {/* FINAL CTA */}
+      {/* ============================= */}
       <section className="relative py-16 px-4 md:px-8 overflow-hidden bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#b94630_100%)] shadow-[0_-12px_30px_rgba(22,41,44,0.35)]">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
@@ -1631,39 +2107,19 @@ export const Home = () => {
           </div>
 
           <h2 className="font-headline text-3xl md:text-4xl font-bold text-white mb-4">
-            Own a business?
+            Ready to get discovered?
           </h2>
           <p className="font-sans text-lg text-white/90 mb-8 max-w-xl mx-auto">
-            Get discovered by thousands of local customers for just ₹499.
+            Create your business card and landing page today. Share your link
+            and let customers reach you.
           </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left">
-            {[
-              { icon: Globe, label: 'Your own business URL', sub: 'zyphoriz.in/{name}' },
-              { icon: ShieldCheck, label: 'Verified badge', sub: 'Trusted by customers' },
-              { icon: Phone, label: 'Direct call & WhatsApp', sub: 'Connect instantly' },
-            ].map(({ icon: Icon, label, sub }) => (
-              <div
-                key={label}
-                className="bg-[#FBF6EC] rounded-xl p-4 flex items-start gap-3 shadow-md"
-              >
-                <div className="w-8 h-8 rounded-lg bg-[#B94630]/10 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-4 h-4 text-[#B94630]" />
-                </div>
-                <div>
-                  <p className="font-sans text-xs font-semibold text-[#241F1A]">{label}</p>
-                  <p className="font-sans text-xs text-[#241F1A]/60">{sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
 
           <Link
             to="/create"
             className="inline-flex items-center gap-3 bg-[#FBF6EC] text-[#B94630] font-sans font-bold px-10 py-4 rounded-2xl hover:bg-white transition-all duration-200 text-lg shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] active:scale-[0.98]"
           >
             <PlusCircle className="w-6 h-6" />
-            List your business
+            Create your business card
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>

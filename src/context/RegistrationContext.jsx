@@ -30,6 +30,7 @@ const emptyState = {
   referralCode: '',
   selectedPlan: 'standard',
   planPrice: '₹499/yr',
+  template: 'classic',
   bannerImage: null,       // File object or preview URL
   galleryImages: [],       // Array of File objects or preview URLs
   openingHours: defaultOpeningHours,

@@ -1,4 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.zyphoriz.com/api/v1';
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (import.meta.env.DEV) return 'http://localhost:5002/api/v1';
+  return 'https://api.zyphoriz.com/api/v1';
+};
+
+const API_URL = getApiBaseUrl();
 const TOKEN_KEY = 'zyphoriz_token';
 
 const request = async (path, options = {}) => {
@@ -9,16 +15,52 @@ const request = async (path, options = {}) => {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
-  const payload = await response.json().catch(() => ({}));
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+      signal: controller.signal,
+    });
+
+    const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.success === false) {
-    throw new Error(payload.message || 'Something went wrong. Please try again.');
+  console.error('API request failed:', {
+    endpoint: `${API_URL}${path}`,
+    status: response.status,
+    response: payload,
+  });
+
+  const message =
+    payload.message ||
+    payload.error?.message ||
+    payload.error ||
+    `Request failed with status code ${response.status}`;
+
+  throw new Error(
+    typeof message === 'string'
+      ? message
+      : JSON.stringify(message)
+  );
+}
+
+    return payload.token ? { ...payload.data, token: payload.token } : payload.data;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out while contacting the server. Please check that the backend is running.');
+    }
+
+    if (error instanceof TypeError) {
+      throw new Error('Network error: the backend is unreachable or CORS is blocking the request.');
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return payload.token ? { ...payload.data, token: payload.token } : payload.data;
 };
 
 export const authToken = {
@@ -37,6 +79,7 @@ export const api = {
   businesses: {
     list: (params = '') => request(`/businesses${params ? `?${params}` : ''}`),
     bySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
+    getBySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
     mine: () => request('/businesses/mine'),
     create: (body) => request('/businesses', { method: 'POST', body }),
     update: (id, body) => request(`/businesses/${id}`, { method: 'PUT', body }),

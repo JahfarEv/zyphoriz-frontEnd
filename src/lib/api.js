@@ -1,5 +1,11 @@
 const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
+  const isLoopbackUrl = configuredUrl && /\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(configuredUrl);
+
+  if (configuredUrl && !(import.meta.env.PROD && isLoopbackUrl)) {
+    return configuredUrl;
+  }
+
   if (import.meta.env.DEV) return 'http://localhost:5002/api/v1';
   return 'https://api.zyphoriz.com/api/v1';
 };

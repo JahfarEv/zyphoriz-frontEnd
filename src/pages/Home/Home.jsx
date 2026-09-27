@@ -144,22 +144,25 @@ export const Home = () => {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
             <Sparkles className="w-4 h-4" />
-            For shops, professionals &amp; freelancers
+  Your Space. Your Identity. Your Link.
           </div>
 
-          <h1 className="font-headline text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
-            Everything about your business
+          <h1 className="font-headline text-4xl md:text-7xl font-extrabold text-white mb-4 leading-tight">
+            Everything about you,
             <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent">
-              on one link
+    All in One Link.
             </span>
           </h1>
 
           <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
 
-          <p className="font-sans text-lg text-white/70 mb-10 max-w-xl mx-auto">
-            Create a shareable page with your contact, location, hours, photos,
-            and services — no website needed.
-          </p>
+       <p className="font-sans text-lg md:text-xl text-white/75 mb-5 max-w-2xl mx-auto leading-relaxed">
+  Create your own stunning digital page in minutes.
+  Showcase who you are, what you do, your work,
+  services, photos and contact details —
+  all in one place.
+</p>
+
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -183,25 +186,42 @@ export const Home = () => {
             </a>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mt-6 text-sm text-white/50">
-            <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
-            Trusted by 500+ business owners
-          </div>
+          <div className="flex items-center justify-center gap-2 mt-8 text-sm text-white/60">
+  <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
+  Made for individuals, creators, businesses & everyone.
+</div>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 mt-10 pt-8 border-t border-white/10">
-            <div>
-              <div className="text-2xl font-bold text-[#5eead4]">500+</div>
-              <div className="text-sm text-white/60">Live pages</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-[#E8A23D]">50+</div>
-              <div className="text-sm text-white/60">Categories</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-[#5eead4]">2 min</div>
-              <div className="text-sm text-white/60">Setup time</div>
-            </div>
-          </div>
+
+
+
+<div className="flex flex-wrap items-center justify-center gap-8 md:gap-14 mt-12 pt-8 border-t border-white/10">
+    <div>
+      <div className="text-2xl font-bold text-[#5eead4]">
+        One Link
+      </div>
+      <div className="text-sm text-white/60 mt-1">
+        Everything in one place
+      </div>
+    </div>
+
+    <div>
+      <div className="text-2xl font-bold text-[#E8A23D]">
+        No Code
+      </div>
+      <div className="text-sm text-white/60 mt-1">
+        Easy page builder
+      </div>
+    </div>
+
+    <div>
+      <div className="text-2xl font-bold text-[#5eead4]">
+        24/7
+      </div>
+      <div className="text-sm text-white/60 mt-1">
+        Your online presence
+      </div>
+    </div>
+  </div>
         </div>
       </section>
 

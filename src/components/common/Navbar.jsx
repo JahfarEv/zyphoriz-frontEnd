@@ -77,8 +77,12 @@ export const Navbar = () => {
     <header className="bg-[linear-gradient(135deg,#16292c_0%,#2f756d_58%,#b94630_100%)] sticky top-0 z-50 w-full shadow-lg border-b border-white/15">
       <div className="flex justify-between items-center w-full px-4 md:px-8 h-14 md:h-16">
         {/* Brand — stays on ink (primary): the structural/identity color */}
-        <Link to="/" className="font-headline text-xl md:text-2xl font-extrabold text-[#FBF6EC] tracking-tight">
-          ZYPHORIZ
+        <Link to="/" aria-label="Zyphoriz home" className="inline-flex items-center flex-shrink-0">
+          <img
+            src="/image/zypho.png"
+            alt="Zyphoriz"
+            className="h-10 md:h-16 w-auto max-w-[180px] object-contain"
+          />
         </Link>
 
         {/* Nav Links — desktop only. Active state now uses marigold (secondary) as the accent */}

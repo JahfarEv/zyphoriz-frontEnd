@@ -7,7 +7,7 @@ export const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, register } = useAuth();
-  const [mode, setMode] = useState('register');
+  const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ mobile: '', email: '', password: '', identifier: '' });
   const [error, setError] = useState('');
 
@@ -42,21 +42,6 @@ export const Auth = () => {
           <p className="font-sans text-sm text-on-surface-variant mt-2">
             {mode === 'register' ? 'Sign up before listing your business.' : 'Log in to manage your businesses.'}
           </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1 p-1 bg-surface-container rounded-xl mb-6">
-          {['register', 'login'].map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => { setMode(tab); setError(''); }}
-              className={`py-2 rounded-lg text-sm font-semibold capitalize transition-colors ${
-                mode === tab ? 'bg-surface text-primary shadow-sm' : 'text-on-surface-variant'
-              }`}
-            >
-              {tab === 'register' ? 'Register' : 'Log in'}
-            </button>
-          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -101,6 +86,17 @@ export const Auth = () => {
             {mode === 'register' ? 'Create account' : 'Log in'} <ArrowRight className="w-4 h-4" />
           </button>
         </form>
+
+        <p className="text-center font-sans text-sm text-on-surface-variant mt-5">
+          {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+          <button
+            type="button"
+            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
+            className="text-primary font-semibold hover:underline"
+          >
+            {mode === 'login' ? 'Register' : 'Log in'}
+          </button>
+        </p>
 
         <p className="text-center font-sans text-xs text-on-surface-variant mt-6">
           Browse businesses without an account. <Link to="/" className="text-primary font-semibold hover:underline">Return home</Link>

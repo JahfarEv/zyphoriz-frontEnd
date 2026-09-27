@@ -483,3 +483,655 @@
 //     </div>
 //   );
 // };
+
+
+
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
+import html2canvas from 'html2canvas';
+import {
+  Phone,
+  MessageCircle,
+  Mail,
+  Globe,
+  MapPin,
+  Clock,
+  Share2,
+  Download,
+  ShieldCheck,
+  Star,
+  ChevronLeft,
+  Loader2,
+  AlertCircle,
+  BadgeCheck,
+  Instagram,
+  Facebook,
+  Youtube,
+  Linkedin,
+  Twitter,
+  Image as ImageIcon,
+  ExternalLink,
+} from 'lucide-react';
+import { api } from '../../lib/api';
+import { getTemplateConfig, DEFAULT_TEMPLATE } from '../../data/templates';
+
+const SOCIAL_ICONS = {
+  instagram: Instagram,
+  facebook: Facebook,
+  youtube: Youtube,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  x: Twitter,
+  website: Globe,
+};
+
+export const PublicBusinessPage = () => {
+  const { slug } = useParams();
+  const pageRef = useRef(null);
+
+  const [business, setBusiness] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    setLoading(true);
+    setError('');
+
+    api.businesses
+      .bySlug(slug)
+      .then((data) => setBusiness(data?.business || data))
+      .catch((err) => setError(err.message || 'Business not found'))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  const handleWhatsApp = () => {
+    const number = business?.whatsapp || business?.phone;
+    if (number) {
+      const clean = number.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${clean}`, '_blank');
+    }
+  };
+
+  const handleEmail = () => {
+    if (business?.email) window.location.href = `mailto:${business.email}`;
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: business?.name || 'Business Page',
+          text: `Check out ${business?.name} on Zyphoriz`,
+          url,
+        });
+      } catch (e) {
+        /* cancelled */
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownloadPage = async () => {
+    if (!pageRef.current) return;
+    try {
+      const canvas = await html2canvas(pageRef.current, {
+        backgroundColor: theme.surface,
+        scale: 2,
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = `${slug}-business-page.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) {
+      console.error('Download failed', e);
+    }
+  };
+
+  // Resolve template theme BEFORE any early returns so hooks stay consistent
+  const templateConfig = getTemplateConfig(business?.template || DEFAULT_TEMPLATE);
+  const theme = templateConfig.theme;
+
+  // LOADING
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#16292C] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin mx-auto mb-4" />
+          <p className="font-sans text-sm text-white/60">Loading business page...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ERROR
+  if (error || !business) {
+    return (
+      <div className="min-h-screen bg-[#16292C] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-8 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#B94630]/15 border border-[#B94630]/30 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-6 h-6 text-[#B94630]" />
+          </div>
+          <h1 className="font-headline text-xl font-bold text-white mb-2">
+            Page not found
+          </h1>
+          <p className="font-sans text-sm text-white/60 mb-6">
+            {error || 'This business page does not exist or has been removed.'}
+          </p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-white font-sans font-bold px-6 py-3 rounded-xl text-sm transition-all"
+            style={{
+              background: `linear-gradient(135deg, ${theme.deep} 0%, ${theme.accent} 100%)`,
+              boxShadow: `0 14px 30px -12px ${theme.accent}99`,
+            }}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Go to homepage
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // DERIVED
+  const {
+    name,
+    category,
+    description,
+    phone,
+    additionalPhones = [],
+    whatsapp,
+    email,
+    website,
+    address,
+    city,
+    location,
+    hours,
+    socials = [],
+    photos = [],
+    gallery = [],
+    verified,
+    rating,
+    reviews,
+    services = [],
+    openingHours = [],
+    video,
+    instagram,
+    facebook,
+    youtube,
+  } = business;
+
+  const callNumbers = [phone, ...additionalPhones].filter(Boolean);
+
+  const categoryName =
+    typeof category === 'string' ? category : category?.name || null;
+
+  const publicUrl = window.location.href;
+  const allPhotos = photos.length > 0 ? photos : gallery;
+  const displayPhotos = allPhotos.slice(0, 6);
+
+  // Normalise socials: allow both array `socials` and flat fields
+  const socialLinks =
+    socials.length > 0
+      ? socials
+      : [
+          instagram && { platform: 'instagram', url: instagram },
+          facebook && { platform: 'facebook', url: facebook },
+          youtube && { platform: 'youtube', url: youtube },
+        ].filter(Boolean);
+
+  const fullAddress = [address, city].filter(Boolean).join(', ');
+  const mapsUrl =
+    location ||
+    (fullAddress
+      ? `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`
+      : null);
+
+  return (
+    <div
+      className="w-full min-h-screen"
+      style={{ backgroundColor: theme.surface, color: theme.textOnSurface }}
+    >
+      {/* Back link */}
+      <div className="max-w-3xl mx-auto px-4 pt-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold opacity-50 hover:opacity-100 transition-opacity"
+          style={{ color: theme.textOnSurface }}
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+          Back to Zyphoriz
+        </Link>
+      </div>
+
+      {/* MAIN PAGE */}
+      <main ref={pageRef} className="max-w-3xl mx-auto px-4 py-6 pb-20">
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)]">
+          {/* Cover / Banner */}
+          <div className="h-48 md:h-56 relative">
+            {business.coverImage || business.bannerImage ? (
+              <img
+                src={business.coverImage || business.bannerImage}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full relative"
+                style={{ background: templateConfig.gradient }}
+              >
+                <div
+                  className="absolute inset-0 opacity-[0.12]"
+                  style={{
+                    backgroundImage: `radial-gradient(#FBF6EC 1.5px, transparent 1.5px)`,
+                    backgroundSize: '18px 18px',
+                  }}
+                />
+              </div>
+            )}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(to top, ${theme.surface}, transparent 70%)`,
+              }}
+            />
+          </div>
+
+          {/* Content */}
+          <div
+            className="px-6 pb-6 -mt-16 relative z-10"
+            style={{ backgroundColor: theme.surface }}
+          >
+            <div className="flex flex-col items-center text-center">
+              {/* Logo / Initials */}
+              <div
+                className="w-24 h-24 rounded-2xl border-4 shadow-lg flex items-center justify-center overflow-hidden mb-3"
+                style={{
+                  backgroundColor: theme.surface,
+                  borderColor: theme.surface,
+                }}
+              >
+                {business.logo ? (
+                  <img
+                    src={business.logo}
+                    alt={name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span
+                    className="text-3xl font-headline font-bold"
+                    style={{ color: theme.accentSoft }}
+                  >
+                    {name?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
+
+              {/* Name + Verified */}
+              <h1 className="font-headline text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
+                {name}
+                {verified && (
+                  <BadgeCheck
+                    className="w-5 h-5"
+                    style={{ color: theme.accentSoft }}
+                    title="Verified"
+                  />
+                )}
+              </h1>
+
+              {/* Category */}
+              {categoryName && (
+                <p
+                  className="font-sans text-sm font-semibold mt-1"
+                  style={{ color: theme.highlight }}
+                >
+                  {categoryName}
+                </p>
+              )}
+
+              {/* Rating */}
+              {rating > 0 && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-3.5 h-3.5"
+                        style={{
+                          color: i < Math.round(rating) ? theme.highlight : '#ffffff33',
+                          fill: i < Math.round(rating) ? theme.highlight : 'transparent',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-sans text-xs opacity-60">
+                    {Number(rating).toFixed(1)} ({reviews || 0} reviews)
+                  </span>
+                </div>
+              )}
+
+              {/* Description */}
+              {description && (
+                <p className="font-sans text-sm opacity-70 leading-relaxed mt-4 max-w-lg">
+                  {description}
+                </p>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-6">
+              {callNumbers.map((number, index) => (
+                <a
+                  key={`${number}-${index}`}
+                  href={`tel:${number}`}
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] transition-all"
+                >
+                  <Phone className="w-5 h-5" style={{ color: theme.accentSoft }} />
+                  <span className="font-sans text-[11px] font-semibold opacity-80">
+                    {index === 0 ? 'Call' : `Call ${index + 1}`}
+                  </span>
+                </a>
+              ))}
+
+              {(whatsapp || phone) && (
+                <button
+                  onClick={handleWhatsApp}
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-[#25D366]/20 hover:border-[#25D366]/40 transition-all"
+                >
+                  <MessageCircle className="w-5 h-5 text-[#25D366]" />
+                  <span className="font-sans text-[11px] font-semibold opacity-80">
+                    WhatsApp
+                  </span>
+                </button>
+              )}
+
+              {email && (
+                <button
+                  onClick={handleEmail}
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] transition-all"
+                >
+                  <Mail className="w-5 h-5" style={{ color: theme.highlight }} />
+                  <span className="font-sans text-[11px] font-semibold opacity-80">
+                    Email
+                  </span>
+                </button>
+              )}
+
+              {website && (
+                <a
+                  href={website.startsWith('http') ? website : `https://${website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] transition-all"
+                >
+                  <Globe className="w-5 h-5" style={{ color: theme.accentSoft }} />
+                  <span className="font-sans text-[11px] font-semibold opacity-80">
+                    Website
+                  </span>
+                </a>
+              )}
+
+              {mapsUrl && (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] transition-all"
+                >
+                  <MapPin className="w-5 h-5" style={{ color: theme.highlight }} />
+                  <span className="font-sans text-[11px] font-semibold opacity-80">
+                    Directions
+                  </span>
+                </a>
+              )}
+            </div>
+
+            {/* Services */}
+            {services.length > 0 && (
+              <div className="mt-8">
+                <h2 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                  <span
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${theme.accent}26` }}
+                  >
+                    <ExternalLink
+                      className="w-3.5 h-3.5"
+                      style={{ color: theme.accentSoft }}
+                    />
+                  </span>
+                  Services
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {services.map((service, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/[0.04] rounded-xl border border-white/10 p-4"
+                    >
+                      <p className="font-sans text-sm font-semibold">
+                        {service.name || service}
+                      </p>
+                      {service.description && (
+                        <p className="font-sans text-xs opacity-50 mt-1">
+                          {service.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gallery */}
+            {displayPhotos.length > 0 && (
+              <div className="mt-8">
+                <h2 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                  <span
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${theme.accent}26` }}
+                  >
+                    <ImageIcon
+                      className="w-3.5 h-3.5"
+                      style={{ color: theme.accentSoft }}
+                    />
+                  </span>
+                  Gallery
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {displayPhotos.map((photo, index) => (
+                    <div
+                      key={index}
+                      className="aspect-square rounded-xl overflow-hidden bg-white/[0.06] border border-white/10"
+                    >
+                      <img
+                        src={photo}
+                        alt={`${name} photo ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* YouTube Video */}
+            {video && (
+              <div className="mt-8">
+                <h2 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                  <span
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${theme.accent}26` }}
+                  >
+                    <Youtube
+                      className="w-3.5 h-3.5"
+                      style={{ color: theme.accentSoft }}
+                    />
+                  </span>
+                  Watch
+                </h2>
+                <div className="rounded-2xl overflow-hidden border border-white/10 aspect-video">
+                  <iframe
+                    src={
+                      video.includes('youtu.be/')
+                        ? `https://www.youtube.com/embed/${video.split('youtu.be/')[1]?.split('?')[0]}`
+                        : video.includes('watch?v=')
+                          ? `https://www.youtube.com/embed/${video.split('watch?v=')[1]?.split('&')[0]}`
+                          : video.replace('watch?v=', 'embed/')
+                    }
+                    title="Business video"
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Address Block */}
+            {fullAddress && (
+              <div className="mt-8 bg-white/[0.04] rounded-2xl border border-white/10 p-5 flex items-start gap-3">
+                <MapPin
+                  className="w-5 h-5 flex-shrink-0 mt-0.5"
+                  style={{ color: theme.highlight }}
+                />
+                <div>
+                  <p className="font-sans text-xs font-semibold opacity-50 mb-1">
+                    Address
+                  </p>
+                  <p className="font-sans text-sm opacity-80">{fullAddress}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Opening Hours */}
+            {openingHours.length > 0 && (
+              <div className="mt-6 bg-white/[0.04] rounded-2xl border border-white/10 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-4 h-4" style={{ color: theme.accentSoft }} />
+                  <h3 className="font-headline text-sm font-bold">Opening Hours</h3>
+                </div>
+                <div className="space-y-1.5">
+                  {openingHours.map((row) => (
+                    <div
+                      key={row.day}
+                      className="flex items-center justify-between text-xs font-sans"
+                    >
+                      <span className="opacity-70">{row.day}</span>
+                      <span className={row.open ? 'opacity-90' : 'opacity-40'}>
+                        {row.open ? `${row.from} – ${row.to}` : 'Closed'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="mt-8">
+                <h2 className="font-headline text-lg font-bold mb-4">Connect</h2>
+                <div className="flex flex-wrap gap-3">
+                  {socialLinks.map((social, index) => {
+                    const Icon =
+                      SOCIAL_ICONS[social.platform?.toLowerCase()] || Globe;
+                    return (
+                      <a
+                        key={index}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.12] transition-all"
+                      >
+                        <Icon
+                          className="w-4 h-4"
+                          style={{ color: theme.accentSoft }}
+                        />
+                        <span className="font-sans text-xs font-semibold capitalize opacity-80">
+                          {social.platform}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* QR + Share */}
+            <div className="mt-8 bg-white/[0.04] rounded-2xl border border-white/10 p-5 flex flex-col sm:flex-row items-center gap-5">
+              <div className="bg-white p-3 rounded-xl flex-shrink-0">
+                <QRCodeSVG
+                  value={publicUrl}
+                  size={100}
+                  bgColor="#FFFFFF"
+                  fgColor={theme.surface}
+                  level="M"
+                />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="font-headline text-sm font-bold mb-1">
+                  Scan to visit
+                </h3>
+                <p className="font-sans text-xs opacity-50 mb-3">
+                  Point your camera at the QR code to open this page.
+                </p>
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <button
+                    onClick={handleShare}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-sans text-xs font-semibold transition-all"
+                    style={{
+                      backgroundColor: `${theme.accent}26`,
+                      color: theme.accentSoft,
+                      border: `1px solid ${theme.accent}4D`,
+                    }}
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    {copied ? 'Link copied!' : 'Share'}
+                  </button>
+                  <button
+                    onClick={handleDownloadPage}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/10 font-sans text-xs font-semibold opacity-70 hover:bg-white/[0.12] transition-all"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Save page
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Verified Footer */}
+            {verified && (
+              <div className="mt-6 flex items-center justify-center gap-2 text-xs font-sans opacity-40">
+                <ShieldCheck
+                  className="w-3.5 h-3.5"
+                  style={{ color: theme.accentSoft }}
+                />
+                Verified by Zyphoriz
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Powered by */}
+        <div className="text-center mt-8">
+          <p className="font-sans text-xs opacity-30">
+            Powered by{' '}
+            <Link
+              to="/"
+              className="font-semibold hover:underline"
+              style={{ color: theme.accentSoft }}
+            >
+              Zyphoriz
+            </Link>
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+};

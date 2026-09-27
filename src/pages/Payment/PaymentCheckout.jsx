@@ -283,6 +283,7 @@ import {
 import { useRegistration } from '../../context/RegistrationContext';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
+import { showError } from '../../lib/alerts';
 
 const ACCENT = '#14b8a6';
 const ACCENT_DEEP = '#0f766e';
@@ -394,6 +395,12 @@ export const PaymentCheckout = () => {
 
         description:
           formData.description,
+
+        additionalPhones:
+          (formData.additionalPhones || []).filter((phone) => phone.trim()),
+
+        template:
+          formData.template || 'classic',
 
         openingHours:
           formData.openingHours,
@@ -606,7 +613,7 @@ export const PaymentCheckout = () => {
         err
       );
 
-      alert(
+      showError(
         err?.message ||
         'Error processing payment or saving business'
       );

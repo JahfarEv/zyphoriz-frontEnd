@@ -9,6 +9,7 @@ import {
 import { Navbar } from "./components/common/Navbar";
 import { Footer } from "./components/common/Footer";
 import { MobileNavigation } from "./components/common/MobileNavigation";
+import { LoadingScreen } from "./components/common/LoadingScreen";
 import { RegistrationProvider } from "./context/RegistrationContext";
 
 import { Home } from "./pages/Home/Home";
@@ -31,12 +32,7 @@ const RequireAuth = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading)
-    return (
-      <div className="py-20 text-center text-on-surface-variant">
-        Checking your session...
-      </div>
-    );
+  if (loading) return <LoadingScreen message="Checking your session..." />;
   if (!user) {
     return (
       <Navigate

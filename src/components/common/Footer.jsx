@@ -44,47 +44,72 @@
 //   );
 // };
 
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 export const Footer = () => {
   return (
-    <footer className="w-full bg-[linear-gradient(135deg,#16292c_0%,#2f756d_58%,#b94630_100%)]  mt-12 pb-24 md:pb-0 text-[#FBF6EC]">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 px-4 md:px-8 py-10 w-full">
+    <footer className="w-full bg-[linear-gradient(135deg,#16292c_0%,#2f756d_58%,#b94630_100%)] mt-12 pb-24 md:pb-0 text-[#FBF6EC]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10 px-4 md:px-8 py-10 w-full max-w-7xl mx-auto">
         {/* Brand */}
-        <div className="col-span-2 md:col-span-1 flex flex-col gap-3">
-          <span className="font-headline text-2xl font-black text-[#FBF6EC]">ZYPHORIZ</span>
-          <p className="font-sans text-xs text-[#FBF6EC]/70 leading-relaxed">
-            Local business discovery made simple. Find trusted shops, restaurants, clinics &amp; services near you.
+        <div className="sm:col-span-2 md:col-span-2 flex flex-col gap-4 ">
+          <Link to="/" className="inline-flex items-center">
+            <img
+              src="/image/zypho.png"
+              alt="ZYPHORIZ"
+              className="h-10 md:h-14 w-auto object-contain"
+            />
+          </Link>
+          <p className="font-sans text-xs text-[#FBF6EC]/70 leading-relaxed max-w-sm">
+ Create your own stunning digital page in minutes.
+  Showcase who you are, what you do, your work,
+  services, photos and contact details —
+  all in one place.          </p>
+          <p className="font-sans text-xs text-[#FBF6EC]/50">
+            © {new Date().getFullYear()} ZYPHORIZ.
           </p>
-          <p className="font-sans text-xs text-[#FBF6EC]/50">© {new Date().getFullYear()} ZYPHORIZ.</p>
-        </div>
-
-        {/* Discover */}
-        <div className="flex flex-col gap-3">
-          <h4 className="font-headline text-sm font-bold text-[#E8A23D]">Discover</h4>
-          <Link to="/" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Browse All</Link>
-          <Link to="/?cat=food" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Restaurants</Link>
-          <Link to="/?cat=medical" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Medical</Link>
-          <Link to="/?cat=beauty" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Beauty & Spa</Link>
         </div>
 
         {/* For Business */}
         <div className="flex flex-col gap-3">
           <h4 className="font-headline text-sm font-bold text-[#E8A23D]">For Business</h4>
-          <Link to="/create" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">List Your Business</Link>
+          <Link
+            to="/create"
+            className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors"
+          >
+            Create Your Page
+          </Link>
           <span className="font-sans text-xs text-[#FBF6EC]/70">Verified Badge</span>
           <span className="font-sans text-xs text-[#FBF6EC]/70">Your Own URL</span>
         </div>
 
-        {/* Legal */}
+        {/* Support */}
         <div className="flex flex-col gap-3">
           <h4 className="font-headline text-sm font-bold text-[#E8A23D]">Support</h4>
-          <Link to="/privacy" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Privacy Policy</Link>
-          <Link to="/about" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">About ZYPHORIZ</Link>
-          <Link to="/contact" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Contact Us</Link>
-          <Link to="/terms" className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors">Terms &amp; Conditions</Link>
+          <Link
+            to="/privacy"
+            className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            to="/about"
+            className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors"
+          >
+            About ZYPHORIZ
+          </Link>
+          <Link
+            to="/contact"
+            className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors"
+          >
+            Contact Us
+          </Link>
+          <Link
+            to="/terms"
+            className="font-sans text-xs text-[#FBF6EC]/70 hover:text-[#E8A23D] transition-colors"
+          >
+            Terms &amp; Conditions
+          </Link>
         </div>
       </div>
     </footer>

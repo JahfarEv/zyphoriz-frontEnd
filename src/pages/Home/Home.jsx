@@ -368,7 +368,7 @@ export const Home = () => {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
+      {/* <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
@@ -406,7 +406,7 @@ export const Home = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ */}
       <section className="relative py-16 px-4 md:px-8 border-t border-white/10">

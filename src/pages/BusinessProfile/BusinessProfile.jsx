@@ -13,12 +13,12 @@ import {
   MessageCircle,
   CheckCircle2,
   X,
-  Loader2,
   AlertCircle,
   BadgeCheck,
   Star,
 } from "lucide-react";
 import { api } from "../../lib/api";
+import { LoadingScreen } from "../../components/common/LoadingScreen";
 import { useRegistration } from "../../context/RegistrationContext";
 import { getTemplateConfig, DEFAULT_TEMPLATE } from "../../data/templates";
 
@@ -121,20 +121,7 @@ export const BusinessProfile = () => {
 
   // ---------- LOADING ----------
   if (loading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: theme.surface, color: theme.textOnSurface }}
-      >
-        <div className="text-center">
-          <Loader2
-            className="w-8 h-8 animate-spin mx-auto mb-4"
-            style={{ color: theme.accentSoft }}
-          />
-          <p className="font-sans text-sm opacity-60">Loading profile...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading profile..." />;
   }
 
   // ---------- ERROR ----------

@@ -502,7 +502,6 @@ import {
   ShieldCheck,
   Star,
   ChevronLeft,
-  Loader2,
   AlertCircle,
   BadgeCheck,
   Instagram,
@@ -514,6 +513,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { api } from '../../lib/api';
+import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { getTemplateConfig, DEFAULT_TEMPLATE } from '../../data/templates';
 
 const SOCIAL_ICONS = {
@@ -601,14 +601,7 @@ export const PublicBusinessPage = () => {
 
   // LOADING
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#16292C] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin mx-auto mb-4" />
-          <p className="font-sans text-sm text-white/60">Loading business page...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading business page..." />;
   }
 
   // ERROR

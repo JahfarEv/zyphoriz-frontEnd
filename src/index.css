@@ -24,3 +24,147 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.nexora-loading {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  overflow: hidden;
+  padding: 2rem;
+  color: #f8faf9;
+  background-color: #16292c;
+  background-image:
+    radial-gradient(ellipse at 50% 42%, rgba(20, 184, 166, 0.2), transparent 34%),
+    radial-gradient(ellipse at 50% 100%, rgba(232, 162, 61, 0.1), transparent 48%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+}
+
+.nexora-loading::after {
+  position: absolute;
+  z-index: -1;
+  width: min(76vw, 34rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(94, 234, 212, 0.08);
+  border-radius: 50%;
+  content: "";
+  animation: nexora-breathe 3.2s ease-in-out infinite;
+}
+
+.nexora-loader__visual {
+  position: relative;
+  display: grid;
+  width: 7rem;
+  aspect-ratio: 1;
+  place-items: center;
+  margin-bottom: 2rem;
+}
+
+.nexora-loader__orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(94, 234, 212, 0.24);
+  border-top-color: #5eead4;
+  border-right-color: #e8a23d;
+  border-radius: 50%;
+  box-shadow: 0 0 32px rgba(20, 184, 166, 0.12);
+  animation: nexora-spin 1.8s linear infinite;
+}
+
+.nexora-loader__orbit--inner {
+  inset: 0.75rem;
+  border-color: rgba(232, 162, 61, 0.22);
+  border-bottom-color: #e8a23d;
+  border-left-color: #5eead4;
+  animation-direction: reverse;
+  animation-duration: 2.5s;
+}
+
+.nexora-loader__mark {
+  display: grid;
+  width: 3.25rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, rgba(20, 184, 166, 0.3), rgba(22, 41, 44, 0.9));
+  color: #f8faf9;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.18);
+}
+
+.nexora-loader__spark {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.4rem;
+  width: 0.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e8a23d;
+  box-shadow: 0 0 14px rgba(232, 162, 61, 0.9);
+  animation: nexora-pulse 1.4s ease-in-out infinite;
+}
+
+.nexora-loader__brand {
+  margin: 0;
+  color: #5eead4;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+}
+
+.nexora-loader__message {
+  margin: 0.65rem 0 1.4rem;
+  color: rgba(248, 250, 249, 0.72);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.nexora-loader__track {
+  width: 8rem;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nexora-loader__track span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #5eead4, #e8a23d);
+  animation: nexora-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes nexora-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nexora-pulse {
+  50% { opacity: 0.45; transform: scale(0.7); }
+}
+
+@keyframes nexora-breathe {
+  50% { transform: scale(1.06); opacity: 0.45; }
+}
+
+@keyframes nexora-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexora-loading::after,
+  .nexora-loader__orbit,
+  .nexora-loader__spark,
+  .nexora-loader__track span {
+    animation: none;
+  }
+}

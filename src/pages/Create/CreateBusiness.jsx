@@ -1003,6 +1003,7 @@ import {
   Instagram,
   Facebook,
   Youtube,
+  Send,
   MessageCircle,
   ArrowRight,
   ShieldCheck,
@@ -1057,6 +1058,8 @@ const defaultOpeningHours = [
   { day: "Saturday", open: true, from: "09:00", to: "18:00" },
   { day: "Sunday", open: false, from: "09:00", to: "18:00" },
 ];
+
+const MAX_GALLERY_PHOTOS = 6;
 
 /* Shared field styling — one source of truth keeps every input consistent */
 const fieldClass = (hasError, extra = "") =>
@@ -1142,19 +1145,20 @@ export const CreateBusiness = () => {
   const galleryInputRef = useRef(null);
 
   const [form, setForm] = useState(() => ({
-    name: "The Awesome Bakery",
+    name: "",
+    slug: "",
     category: "",
-    phone: "+91 9876543210",
-    whatsapp: "+91 9876543210",
-    email: "hello@awesomebakery.com",
-    address: "123 Baker Street, Main Junction",
-    city: "Kochi",
-    location: "https://maps.google.com/?q=kochi",
-    description:
-      "We bake the best cakes and pastries in town. Freshly baked everyday with love and premium ingredients.",
-    website: "https://awesomebakery.com",
+    phone: "",
+    whatsapp: "",
+    email: "",
+    address: "",
+    city: "",
+    location: "",
+    description: "",
+    website: "",
     instagram: "",
     facebook: "",
+    telegram: "",
     youtube: "",
     video: "",
     additionalPhones: ["", ""],
@@ -1205,7 +1209,8 @@ export const CreateBusiness = () => {
           category: match.categoryId || "",
           categoryName: match.category || "",
           bannerImage: match.image || match.coverImage || null,
-          galleryImages: match.gallery || [],
+          galleryImages: (match.gallery || []).slice(0, MAX_GALLERY_PHOTOS),
+          galleryFiles: [],
           additionalPhones: [...(match.additionalPhones || []), "", ""].slice(
             0,
             2,
@@ -1226,13 +1231,54 @@ export const CreateBusiness = () => {
   }, [editSlug]);
 
   const [errors, setErrors] = useState({});
+  const [galleryLimitMessage, setGalleryLimitMessage] = useState("");
+  const [slugAvailability, setSlugAvailability] = useState("idle");
 
-  const set = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (field === "slug") {
+      setSlugAvailability(value.trim() ? "checking" : "idle");
+      setErrors((prev) => ({ ...prev, slug: undefined }));
+    }
+  };
+
+  const slug = toSlug(form.slug);
+
+  useEffect(() => {
+    if (!slug) {
+      setSlugAvailability("idle");
+      return undefined;
+    }
+
+    if (editSlug && slug === businessToEdit?.slug) {
+      setSlugAvailability("available");
+      return undefined;
+    }
+
+    let isActive = true;
+    setSlugAvailability("checking");
+    const timeoutId = setTimeout(() => {
+      api.businesses
+        .checkSlug(slug)
+        .then(({ available }) => {
+          if (isActive) setSlugAvailability(available ? "available" : "taken");
+        })
+        .catch(() => {
+          if (isActive) setSlugAvailability("error");
+        });
+    }, 350);
+
+    return () => {
+      isActive = false;
+      clearTimeout(timeoutId);
+    };
+  }, [slug, editSlug, businessToEdit?.slug]);
 
   const validate = () => {
     const errs = {};
     if (!form.name.trim()) errs.name = "Business name is required";
+    if (!toSlug(form.slug)) errs.slug = "Business URL is required";
     if (!form.phone.trim()) errs.phone = "Phone number is required";
     else if (!isValidPhone(form.phone))
       errs.phone = "Enter a valid phone number";
@@ -1255,11 +1301,26 @@ export const CreateBusiness = () => {
     e.preventDefault();
     if (editSlug && !businessToEdit) return;
     if (!validate()) return;
-    const slug = editSlug || toSlug(form.name);
+    const slug = toSlug(form.slug);
+    if (!(editSlug && slug === businessToEdit?.slug)) {
+      try {
+        const { available } = await api.businesses.checkSlug(slug);
+        if (!available) {
+          setSlugAvailability("taken");
+          setErrors((prev) => ({ ...prev, slug: "This business URL is already in use" }));
+          return;
+        }
+      } catch {
+        setSlugAvailability("error");
+        setErrors((prev) => ({ ...prev, slug: "Could not check URL availability. Please try again." }));
+        return;
+      }
+    }
     const selectedCat = categories.find((c) => c.id === form.category);
     if (editSlug && businessToEdit) {
       const payload = new FormData();
       const fields = {
+        slug,
         name: form.name,
         category: selectedCat?.name || "",
         categoryId: form.category || "",
@@ -1273,8 +1334,12 @@ export const CreateBusiness = () => {
         description: form.description,
         instagram: form.instagram,
         facebook: form.facebook,
+        telegram: form.telegram,
         youtube: form.youtube,
         video: form.video,
+        gallery: JSON.stringify(
+          form.galleryImages.filter((image) => !image.startsWith("blob:")),
+        ),
         additionalPhones: JSON.stringify(
           form.additionalPhones.filter((phone) => phone.trim()),
         ),
@@ -1321,8 +1386,18 @@ export const CreateBusiness = () => {
   };
 
   const handleGalleryChange = (e) => {
-    const files = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files);
+    const remainingSlots = Math.max(
+      MAX_GALLERY_PHOTOS - form.galleryImages.length,
+      0,
+    );
+    const files = selectedFiles.slice(0, remainingSlots);
     const previews = files.map((f) => URL.createObjectURL(f));
+    setGalleryLimitMessage(
+      selectedFiles.length > remainingSlots
+        ? `Only ${MAX_GALLERY_PHOTOS} photos are allowed. Remove a photo to add another.`
+        : "",
+    );
     setForm((prev) => ({
       ...prev,
       galleryImages: [...prev.galleryImages, ...previews],
@@ -1331,11 +1406,26 @@ export const CreateBusiness = () => {
     if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
-  const removeGalleryImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: prev.galleryImages.filter((_, i) => i !== index),
-    }));
+  const removeGalleryImage = (image) => {
+    if (image.startsWith("blob:")) URL.revokeObjectURL(image);
+    setGalleryLimitMessage("");
+    setForm((prev) => {
+      const imageIndex = prev.galleryImages.indexOf(image);
+      const isNewImage = image.startsWith("blob:");
+      const newImageIndex = isNewImage
+        ? prev.galleryImages
+            .slice(0, imageIndex)
+            .filter((item) => item.startsWith("blob:")).length
+        : -1;
+
+      return {
+        ...prev,
+        galleryImages: prev.galleryImages.filter((_, index) => index !== imageIndex),
+        galleryFiles: isNewImage
+          ? prev.galleryFiles.filter((_, index) => index !== newImageIndex)
+          : prev.galleryFiles,
+      };
+    });
   };
 
   const updateHour = (index, field, value) => {
@@ -1347,7 +1437,6 @@ export const CreateBusiness = () => {
     });
   };
 
-  const slug = form.name ? toSlug(form.name) : "";
   const selectedTemplate = getTemplateConfig(form.template || DEFAULT_TEMPLATE);
 
   if (loadingEdit) {
@@ -1543,17 +1632,6 @@ export const CreateBusiness = () => {
                   label="Business name"
                   required
                   error={errors.name}
-                  hint={
-                    slug && !errors.name ? (
-                      <p className="mt-1.5 flex items-center gap-1.5 font-sans text-xs text-secondary">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Your URL:{" "}
-                        <span className="font-mono font-semibold">
-                          zyphoriz.in/{slug}
-                        </span>
-                      </p>
-                    ) : null
-                  }
                 >
                   <div className="relative">
                     <Store className={ICON} />
@@ -1563,6 +1641,46 @@ export const CreateBusiness = () => {
                       onChange={set("name")}
                       placeholder="e.g. Malabar Bakery"
                       className={fieldClass(errors.name)}
+                    />
+                  </div>
+                </Field>
+
+                <Field
+                  label="Business URL"
+                  required
+                  error={errors.slug}
+                  hint={
+                    slug && !errors.slug ? (
+                      <div className="mt-1.5 space-y-1 font-sans text-xs">
+                        <p className="text-secondary">
+                          Your page: <span className="font-mono font-semibold">zyphoriz.com/{slug}</span>
+                        </p>
+                        {slugAvailability === "checking" && (
+                          <p className="text-on-surface-variant">Checking availability…</p>
+                        )}
+                        {slugAvailability === "available" && (
+                          <p className="text-green-600">This URL is available.</p>
+                        )}
+                        {slugAvailability === "taken" && (
+                          <p className="text-error">This URL is already in use.</p>
+                        )}
+                        {slugAvailability === "error" && (
+                          <p className="text-error">Could not check URL availability.</p>
+                        )}
+                      </div>
+                    ) : null
+                  }
+                >
+                  <div className="flex overflow-hidden rounded-xl border border-outline-variant bg-background transition-colors focus-within:border-secondary focus-within:ring-4 focus-within:ring-secondary/10">
+                    <span className="flex shrink-0 items-center border-r border-outline-variant bg-surface-container px-3 font-sans text-sm text-on-surface-variant">
+                      zyphoriz.com/
+                    </span>
+                    <input
+                      type="text"
+                      value={form.slug}
+                      onChange={set("slug")}
+                      placeholder="your-business-name"
+                      className="min-w-0 flex-1 bg-transparent px-3 py-3 font-sans text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
                     />
                   </div>
                 </Field>
@@ -1761,7 +1879,7 @@ export const CreateBusiness = () => {
 
                 <div>
                   <p className={`${LABEL} mb-2.5`}>Social media links</p>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="relative">
                       <Instagram className={ICON} />
                       <input
@@ -1779,6 +1897,16 @@ export const CreateBusiness = () => {
                         value={form.facebook}
                         onChange={set("facebook")}
                         placeholder="Facebook"
+                        className={fieldClass(false, "pr-3")}
+                      />
+                    </div>
+                    <div className="relative">
+                      <Send className={ICON} />
+                      <input
+                        type="url"
+                        value={form.telegram}
+                        onChange={set("telegram")}
+                        placeholder="Telegram channel URL"
                         className={fieldClass(false, "pr-3")}
                       />
                     </div>
@@ -1950,7 +2078,10 @@ export const CreateBusiness = () => {
                 <div className="border-t border-outline-variant/20 pt-5">
                   <p className={`${LABEL} mb-1`}>Photo gallery</p>
                   <p className="mb-3.5 font-sans text-xs text-on-surface-variant">
-                    Interior, products, or team — add as many as you like.
+                    Interior, products, or team — up to {MAX_GALLERY_PHOTOS} photos.
+                    <span className="ml-1">
+                      {form.galleryImages.length}/{MAX_GALLERY_PHOTOS} selected
+                    </span>
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -1966,7 +2097,7 @@ export const CreateBusiness = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => removeGalleryImage(idx)}
+                          onClick={() => removeGalleryImage(src)}
                           className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-error text-white opacity-0 shadow transition-opacity group-hover:opacity-100"
                           aria-label={`Remove photo ${idx + 1}`}
                         >
@@ -1975,17 +2106,24 @@ export const CreateBusiness = () => {
                       </div>
                     ))}
 
-                    <button
-                      type="button"
-                      onClick={() => galleryInputRef.current?.click()}
-                      className="group flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant transition-colors hover:border-secondary hover:bg-secondary/5"
-                    >
-                      <Plus className="h-7 w-7 text-outline-variant transition-colors group-hover:text-secondary" />
-                      <span className="font-sans text-xs font-semibold text-on-surface-variant transition-colors group-hover:text-secondary">
-                        Add photo
-                      </span>
-                    </button>
+                    {form.galleryImages.length < MAX_GALLERY_PHOTOS && (
+                      <button
+                        type="button"
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="group flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant transition-colors hover:border-secondary hover:bg-secondary/5"
+                      >
+                        <Plus className="h-7 w-7 text-outline-variant transition-colors group-hover:text-secondary" />
+                        <span className="font-sans text-xs font-semibold text-on-surface-variant transition-colors group-hover:text-secondary">
+                          Add photo
+                        </span>
+                      </button>
+                    )}
                   </div>
+                  {galleryLimitMessage && (
+                    <p className="mt-2 font-sans text-xs font-medium text-error">
+                      {galleryLimitMessage}
+                    </p>
+                  )}
 
                   <input
                     ref={galleryInputRef}
@@ -2028,14 +2166,14 @@ export const CreateBusiness = () => {
                   type="submit"
                   className="group flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-4 font-sans text-base font-bold text-on-secondary shadow-lg shadow-secondary/25 transition-all hover:bg-secondary/90 hover:shadow-xl active:scale-[0.99]"
                 >
-                  {editSlug ? "Save changes" : "Proceed to pay ₹499"}
+                  {editSlug ? "Save changes" : "Continue"}
                   {!editSlug && (
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                   )}
                 </button>
-                <p className="mt-3 text-center font-sans text-xs text-outline">
+                {/* <p className="mt-3 text-center font-sans text-xs text-outline">
                   🔒 Secure payment · ₹499 one-time per year · No hidden charges
-                </p>
+                </p> */}
               </div>
             </div>
 
@@ -2119,7 +2257,7 @@ export const CreateBusiness = () => {
                     </p>
 
                     <div className="mt-3.5 truncate rounded-lg bg-surface-container px-3 py-2 font-mono text-[11px] text-secondary">
-                      zyphoriz.in/{slug || "your-business"}
+                      zyphoriz.com/{slug || "your-business"}
                     </div>
 
                     <div className="mt-3.5 flex items-center gap-2 border-t border-outline-variant/30 pt-3.5">

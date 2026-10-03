@@ -7,6 +7,7 @@ import {
   Globe,
   Instagram,
   Facebook,
+  Send,
   Youtube,
   Clock,
   ShieldCheck,
@@ -16,12 +17,15 @@ import {
   AlertCircle,
   BadgeCheck,
   Star,
+  Store,
+  ArrowRight,
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { LoadingScreen } from "../../components/common/LoadingScreen";
 import { useRegistration } from "../../context/RegistrationContext";
 import { getTemplateConfig, DEFAULT_TEMPLATE } from "../../data/templates";
-
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.poketstor.platform&pcampaignid=web_share";
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return "";
   try {
@@ -67,6 +71,7 @@ export const BusinessProfile = () => {
           website: formData.website,
           instagram: formData.instagram,
           facebook: formData.facebook,
+          telegram: formData.telegram,
           youtube: formData.youtube,
           video: formData.video,
           location: `${formData.address}, ${formData.city}`,
@@ -188,6 +193,7 @@ export const BusinessProfile = () => {
     video,
     instagram,
     facebook,
+    telegram,
     youtube,
     logo,
     coverImage,
@@ -209,7 +215,7 @@ export const BusinessProfile = () => {
     ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
     : "";
 
-  const allPhotos = gallery.length > 0 ? gallery : photos;
+  const allPhotos = (gallery.length > 0 ? gallery : photos).slice(0, 6);
   const hoursList = normaliseHours(openingHours || hours || []);
   const reviewTotal = reviews ?? reviewCount ?? 0;
 
@@ -672,7 +678,7 @@ export const BusinessProfile = () => {
                   </div>
                 )}
 
-                {(instagram || facebook || youtube) && (
+                {(instagram || facebook || telegram || youtube) && (
                   <div className="pt-2 border-t border-white/10">
                     <p className="font-sans text-xs font-semibold mb-2 opacity-80">
                       Follow us
@@ -708,6 +714,22 @@ export const BusinessProfile = () => {
                         >
                           <Facebook className="w-4 h-4" />
                           Facebook
+                        </a>
+                      )}
+                      {telegram && (
+                        <a
+                          href={telegram}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="Telegram"
+                          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all"
+                          style={{
+                            backgroundColor: `${theme.accent}26`,
+                            color: theme.accentSoft,
+                          }}
+                        >
+                          <Send className="w-4 h-4" />
+                          Telegram
                         </a>
                       )}
                       {youtube && (
@@ -804,37 +826,72 @@ export const BusinessProfile = () => {
                 </div>
               )}
 
-              {/* CTA */}
-              <div
-                className="rounded-2xl min-h-[190px] px-5 py-8 text-center flex flex-col items-center justify-center shadow-lg relative overflow-hidden"
-                style={{ background: templateConfig.gradient }}
+    <div
+                className="rounded-2xl p-5 shadow-sm border"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  borderColor: `${theme.highlight}55`,
+                }}
               >
-                <div
-                  className="absolute -right-8 -top-10 h-28 w-28 rounded-full border-[16px]"
-                  style={{ borderColor: `${theme.highlight}4D` }}
-                />
-                <div
-                  className="absolute -left-10 -bottom-12 h-32 w-32 rounded-full border-[18px]"
-                  style={{ borderColor: `${theme.accentSoft}4D` }}
-                />
-                <p className="font-headline text-sm font-bold text-white mb-1 relative z-10">
-                  Own a Business?
-                </p>
-                <p className="font-sans text-xs text-white/80 mb-3 relative z-10">
-                  Get listed on Zyphoriz
-                </p>
-                <Link
-                  to={`/create${
-                    ownerReferralCode
-                      ? `?referral=${encodeURIComponent(ownerReferralCode)}`
-                      : ""
-                  }`}
-                  className="inline-flex items-center justify-center gap-1.5 bg-white font-sans font-bold px-4 py-2 rounded-xl hover:bg-white/90 transition-all text-xs relative z-10"
-                  style={{ color: theme.deep }}
+                <div className="flex items-start gap-3 mb-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${theme.highlight}26` }}
+                  >
+                    <Store
+                      className="w-5 h-5"
+                      style={{ color: theme.highlight }}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-headline text-base font-bold leading-tight">
+                      Business & products listing
+                    </h3>
+                    <p className="font-sans text-xs opacity-60 mt-1 leading-relaxed">
+                      List your business and all your products so customers can
+                      browse and reach you directly.
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 font-sans font-bold px-4 py-2.5 rounded-xl transition-all text-sm text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.deep} 0%, ${theme.accent} 100%)`,
+                    boxShadow: `0 12px 24px -10px ${theme.accent}99`,
+                  }}
                 >
-                  List My Business →
-                </Link>
+                  <Store className="w-4 h-4" />
+                  Get the app
+                  <ArrowRight className="w-4 h-4" />
+                </a>
               </div>
+
+
+              {/* CTA */}
+             <div
+  className="rounded-2xl min-h-[100px] px-5 py-5 flex flex-col items-center justify-center shadow-lg relative overflow-hidden"
+  style={{ background: templateConfig.gradient }}
+>
+  <p className="font-sans text-sm text-white/85 mb-3 relative z-10">
+    Make your presence online.
+  </p>
+
+  <Link
+    to={`/create${
+      ownerReferralCode
+        ? `?referral=${encodeURIComponent(ownerReferralCode)}`
+        : ""
+    }`}
+    className="inline-flex items-center justify-center bg-white font-sans font-bold px-5 py-2 rounded-xl hover:bg-white/90 transition-all text-xs relative z-10"
+    style={{ color: theme.deep }}
+  >
+    Create My Page
+  </Link>
+</div>
             </div>
           </div>
 

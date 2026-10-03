@@ -25,6 +25,7 @@ const emptyState = {
   website: '',
   instagram: '',
   facebook: '',
+  telegram: '',
   youtube: '',
   video: '',
   referralCode: '',

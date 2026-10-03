@@ -266,7 +266,7 @@
 // };
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -295,6 +295,60 @@ export const PaymentCheckout = () => {
   const { user } = useAuth();
 
   const [paying, setPaying] = useState(false);
+  const [priceAmount, setPriceAmount] = useState(null);
+  const [priceBaseAmount, setPriceBaseAmount] = useState(null);
+  const [priceGstAmount, setPriceGstAmount] = useState(null);
+  const [priceGstRate, setPriceGstRate] = useState(null);
+  const [priceCurrency, setPriceCurrency] = useState('INR');
+  const [priceError, setPriceError] = useState('');
+
+  useEffect(() => {
+    let isActive = true;
+
+    api.payments.price()
+      .then(({ amount, baseAmount, gstAmount, gstRate, currency }) => {
+        const parsedAmount = Number(amount);
+        const parsedBaseAmount = Number(baseAmount);
+        const parsedGstAmount = Number(gstAmount);
+        const parsedGstRate = Number(gstRate);
+        if (
+          !Number.isFinite(parsedAmount) || parsedAmount <= 0 ||
+          !Number.isFinite(parsedBaseAmount) ||
+          !Number.isFinite(parsedGstAmount) ||
+          !Number.isFinite(parsedGstRate)
+        ) {
+          throw new Error('The listing price is unavailable.');
+        }
+        if (isActive) {
+          setPriceAmount(parsedAmount);
+          setPriceBaseAmount(parsedBaseAmount);
+          setPriceGstAmount(parsedGstAmount);
+          setPriceGstRate(parsedGstRate);
+          setPriceCurrency(currency || 'INR');
+        }
+      })
+      .catch((error) => {
+        if (isActive) setPriceError(error.message || 'Unable to load the listing price.');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const formatPrice = (amount) => new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: priceCurrency,
+      }).format(amount);
+  const formattedPrice = priceAmount === null
+    ? priceError ? 'Unavailable' : 'Loading...'
+    : formatPrice(priceAmount);
+  const formattedBaseAmount = priceBaseAmount === null
+    ? formattedPrice
+    : formatPrice(priceBaseAmount);
+  const formattedGstAmount = priceGstAmount === null
+    ? formattedPrice
+    : formatPrice(priceGstAmount);
 
   // --------------------------------------------------
   // Load Cashfree SDK
@@ -346,6 +400,9 @@ export const PaymentCheckout = () => {
       // ----------------------------------------------
 
       const businessPayload = {
+        slug:
+          formData.slug,
+
         referralCode:
           formData.referralCode || '',
 
@@ -375,6 +432,9 @@ export const PaymentCheckout = () => {
 
         facebook:
           formData.facebook,
+
+        telegram:
+          formData.telegram,
 
         youtube:
           formData.youtube,
@@ -477,6 +537,7 @@ export const PaymentCheckout = () => {
       const {
         paymentSessionId,
         orderId,
+        amount: orderAmount,
       } =
         await api.payments.createOrder({
           businessId:
@@ -487,6 +548,10 @@ export const PaymentCheckout = () => {
         throw new Error(
           'Cashfree payment session was not created'
         );
+      }
+
+      if (Number.isFinite(Number(orderAmount)) && Number(orderAmount) > 0) {
+        setPriceAmount(Number(orderAmount));
       }
 
       sessionStorage.setItem(
@@ -694,7 +759,7 @@ export const PaymentCheckout = () => {
 
               <button
                 type="submit"
-                disabled={paying}
+                disabled={paying || priceAmount === null || Boolean(priceError)}
                 className="
                   w-full
                   flex
@@ -731,7 +796,7 @@ export const PaymentCheckout = () => {
                   <>
                     <Lock className="w-4 h-4" />
 
-                    Pay ₹499 Securely
+                    Pay Securely
                   </>
                 )}
 
@@ -826,21 +891,15 @@ export const PaymentCheckout = () => {
                     Standard Listing
                   </span>
 
-                  <span>
-                    ₹499
-                  </span>
+                  <span>{formattedBaseAmount}</span>
 
                 </div>
 
                 <div className="flex justify-between font-sans text-sm text-white/70">
 
-                  <span>
-                    GST
-                  </span>
+                  <span>GST {priceGstRate === null ? '' : `(${priceGstRate}%)`}</span>
 
-                  <span>
-                    Included
-                  </span>
+                  <span>{formattedGstAmount}</span>
 
                 </div>
 
@@ -851,12 +910,18 @@ export const PaymentCheckout = () => {
                   </span>
 
                   <span className="text-[#5eead4]">
-                    ₹499
+                    {formattedPrice}
                   </span>
 
                 </div>
 
               </div>
+
+              {priceError && (
+                <p className="text-xs text-red-300" role="alert">
+                  {priceError}
+                </p>
+              )}
 
               {/* Included */}
 
@@ -867,7 +932,7 @@ export const PaymentCheckout = () => {
                   'Verified business badge',
                   'Direct call & WhatsApp button',
                   'Category listing & search',
-                  'Valid for 1 full year',
+                  
                 ].map((item) => (
 
                   <div

@@ -140,7 +140,7 @@ export const UserDashboard = () => {
                          active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
-              List a business
+              Create New Page
             </Link>
 
             <button
@@ -279,10 +279,9 @@ export const UserDashboard = () => {
             <h2 className="font-headline text-xl font-bold text-white mb-2">
               No businesses yet
             </h2>
-            <p className="font-sans text-sm text-white/65 mb-6">
-              Create your first listing and make it easy for local customers to
-              find you.
-            </p>
+       <p className="font-sans text-sm text-white/65 mb-6">
+  Create your first page and share your website URL with your customers.
+</p>
             <Link
               to="/create"
               className="inline-flex items-center gap-2 text-white font-bold px-5 py-3 rounded-xl text-sm transition-all
@@ -291,7 +290,7 @@ export const UserDashboard = () => {
                          shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)]
                          active:scale-[0.98]"
             >
-              <Plus className="w-4 h-4" /> Create your first listing
+              <Plus className="w-4 h-4" /> Create your first page
             </Link>
           </section>
         ) : (

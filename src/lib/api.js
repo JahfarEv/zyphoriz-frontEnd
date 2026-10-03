@@ -84,6 +84,7 @@ export const api = {
   },
   businesses: {
     list: (params = '') => request(`/businesses${params ? `?${params}` : ''}`),
+    checkSlug: (slug) => request(`/businesses/slug-availability?slug=${encodeURIComponent(slug)}`),
     bySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
     getBySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
     mine: () => request('/businesses/mine'),
@@ -93,6 +94,7 @@ export const api = {
   },
   categories: { list: (params = '') => request(`/categories${params}`) },
   payments: {
+    price: () => request('/payments/price'),
     createOrder: (body) => request('/payments/order', { method: 'POST', body: JSON.stringify(body) }),
     checkout: (body) => request('/payments/checkout', { method: 'POST', body: JSON.stringify(body) }),
     mine: () => request('/payments/mine'),

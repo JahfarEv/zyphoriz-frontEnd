@@ -12,8 +12,12 @@ const getApiBaseUrl = () => {
 
 const API_URL = getApiBaseUrl();
 const TOKEN_KEY = 'zyphoriz_token';
+const DEFAULT_REQUEST_TIMEOUT_MS = 20000;
+const BUSINESS_UPLOAD_TIMEOUT_MS = 120000;
+const PAYMENT_REQUEST_TIMEOUT_MS = 60000;
 
 const request = async (path, options = {}) => {
+  const { timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS, ...fetchOptions } = options;
   const token = localStorage.getItem(TOKEN_KEY);
   const headers = {
     ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
@@ -22,11 +26,11 @@ const request = async (path, options = {}) => {
   };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(`${API_URL}${path}`, {
-      ...options,
+      ...fetchOptions,
       headers,
       credentials: 'include',
       signal: controller.signal,
@@ -56,7 +60,7 @@ const request = async (path, options = {}) => {
     return payload.token ? { ...payload.data, token: payload.token } : payload.data;
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error('Request timed out while contacting the server. Please check that the backend is running.');
+      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)} seconds. Please try again.`);
     }
 
     if (error instanceof TypeError) {
@@ -88,17 +92,32 @@ export const api = {
     bySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
     getBySlug: (slug) => request(`/businesses/slug/${encodeURIComponent(slug)}`),
     mine: () => request('/businesses/mine'),
-    create: (body) => request('/businesses', { method: 'POST', body }),
-    update: (id, body) => request(`/businesses/${id}`, { method: 'PUT', body }),
+    create: (body) => request('/businesses', {
+      method: 'POST',
+      body,
+      timeoutMs: BUSINESS_UPLOAD_TIMEOUT_MS,
+    }),
+    update: (id, body) => request(`/businesses/${id}`, {
+      method: 'PUT',
+      body,
+      timeoutMs: BUSINESS_UPLOAD_TIMEOUT_MS,
+    }),
     remove: (id) => request(`/businesses/${id}`, { method: 'DELETE' }),
   },
   categories: { list: (params = '') => request(`/categories${params}`) },
   payments: {
     price: () => request('/payments/price'),
-    createOrder: (body) => request('/payments/order', { method: 'POST', body: JSON.stringify(body) }),
-    checkout: (body) => request('/payments/checkout', { method: 'POST', body: JSON.stringify(body) }),
+    createOrder: (body) => request('/payments/order', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      timeoutMs: PAYMENT_REQUEST_TIMEOUT_MS,
+    }),
+    checkout: (body) => request('/payments/checkout', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      timeoutMs: PAYMENT_REQUEST_TIMEOUT_MS,
+    }),
     mine: () => request('/payments/mine'),
   },
   referrals: () => request('/users/referrals'),
 };
-

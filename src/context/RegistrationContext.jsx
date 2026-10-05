@@ -22,6 +22,11 @@ const emptyState = {
   city: '',
   location: '',
   description: '',
+  descriptionSections: [
+    { title: 'About', description: '' },
+    { title: '', description: '' },
+    { title: '', description: '' },
+  ],
   website: '',
   instagram: '',
   facebook: '',

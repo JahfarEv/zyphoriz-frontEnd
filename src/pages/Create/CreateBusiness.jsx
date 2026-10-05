@@ -1059,6 +1059,12 @@ const defaultOpeningHours = [
   { day: "Sunday", open: false, from: "09:00", to: "18:00" },
 ];
 
+const defaultDescriptionSections = [
+  { title: "About", description: "" },
+  { title: "", description: "" },
+  { title: "", description: "" },
+];
+
 const MAX_GALLERY_PHOTOS = 6;
 
 /* Shared field styling — one source of truth keeps every input consistent */
@@ -1155,6 +1161,7 @@ export const CreateBusiness = () => {
     city: "",
     location: "",
     description: "",
+    descriptionSections: defaultDescriptionSections,
     website: "",
     instagram: "",
     facebook: "",
@@ -1203,9 +1210,22 @@ export const CreateBusiness = () => {
         }
 
         setBusinessToEdit(match);
+        const savedDescriptionSections = Array.isArray(match.descriptionSections)
+          ? match.descriptionSections
+          : [];
+        const descriptionSections = defaultDescriptionSections.map(
+          (section, index) => ({
+            title: savedDescriptionSections[index]?.title || section.title,
+            description:
+              savedDescriptionSections[index]?.description ||
+              (index === 0 ? match.description || "" : ""),
+          }),
+        );
         setForm((current) => ({
           ...current,
           ...match,
+          description: descriptionSections[0].description,
+          descriptionSections,
           category: match.categoryId || "",
           categoryName: match.category || "",
           bannerImage: match.image || match.coverImage || null,
@@ -1241,6 +1261,20 @@ export const CreateBusiness = () => {
       setSlugAvailability(value.trim() ? "checking" : "idle");
       setErrors((prev) => ({ ...prev, slug: undefined }));
     }
+  };
+
+  const setDescriptionSection = (index, field) => (e) => {
+    const value = e.target.value;
+    setForm((prev) => {
+      const descriptionSections = prev.descriptionSections.map((section, sectionIndex) =>
+        sectionIndex === index ? { ...section, [field]: value } : section,
+      );
+      return {
+        ...prev,
+        descriptionSections,
+        ...(index === 0 && field === "description" ? { description: value } : {}),
+      };
+    });
   };
 
   const slug = toSlug(form.slug);
@@ -1282,17 +1316,14 @@ export const CreateBusiness = () => {
     if (!form.phone.trim()) errs.phone = "Phone number is required";
     else if (!isValidPhone(form.phone))
       errs.phone = "Enter a valid phone number";
+    if (!form.bannerImage) errs.bannerImage = "Banner image is required";
     form.additionalPhones.forEach((phone, index) => {
       if (phone.trim() && !isValidPhone(phone)) {
         errs[`additionalPhone${index + 2}`] = "Enter a valid phone number";
       }
     });
-    if (!form.email.trim()) errs.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
+    if (form.email.trim() && !/\S+@\S+\.\S+/.test(form.email))
       errs.email = "Enter a valid email";
-    if (!form.address.trim()) errs.address = "Address is required";
-    if (!form.city.trim()) errs.city = "City / Town is required";
-    if (!form.description.trim()) errs.description = "Description is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -1331,7 +1362,8 @@ export const CreateBusiness = () => {
         address: form.address,
         city: form.city,
         location: form.location,
-        description: form.description,
+        description: form.descriptionSections[0].description,
+        descriptionSections: JSON.stringify(form.descriptionSections),
         instagram: form.instagram,
         facebook: form.facebook,
         telegram: form.telegram,
@@ -1363,6 +1395,7 @@ export const CreateBusiness = () => {
     }
     updateFormData({
       ...form,
+      description: form.descriptionSections[0].description,
       slug,
       categoryName: selectedCat?.name || "",
       selectedPlan: "standard",
@@ -1707,32 +1740,49 @@ export const CreateBusiness = () => {
                   </div>
                 </Field>
 
-                <Field
-                  label="Business description"
-                  required
-                  error={errors.description}
-                >
-                  <div className="relative">
-                    <FileText className={ICON_TOP} />
-                    <textarea
-                      rows={4}
-                      value={form.description}
-                      onChange={set("description")}
-                      placeholder="Describe your products, services, and what makes you special…"
-                      className={fieldClass(
-                        errors.description,
-                        "resize-none leading-relaxed",
-                      )}
-                    />
-                  </div>
-                </Field>
+                <div className="space-y-5">
+                  {form.descriptionSections.map((section, index) => (
+                    <div
+                      key={index}
+                      className="space-y-3 rounded-xl border border-outline-variant/60 p-4"
+                    >
+                      <Field
+                        label={`Section ${index + 1} title`}
+                        optional={index > 0}
+                      >
+                        <input
+                          type="text"
+                          value={section.title}
+                          onChange={setDescriptionSection(index, "title")}
+                          placeholder={index === 0 ? "About" : "Section title"}
+                          className={fieldClass()}
+                        />
+                      </Field>
+                      <Field
+                        label={`Section ${index + 1} description`}
+                        optional
+                      >
+                        <div className="relative">
+                          <FileText className={ICON_TOP} />
+                          <textarea
+                            rows={4}
+                            value={section.description}
+                            onChange={setDescriptionSection(index, "description")}
+                            placeholder="Describe your business, products, or services…"
+                            className={fieldClass(undefined, "resize-none leading-relaxed")}
+                          />
+                        </div>
+                      </Field>
+                    </div>
+                  ))}
+                </div>
               </Section>
 
               {/* 2 — Contact */}
               <Section
                 icon={Phone}
                 title="Contact details"
-                description="How customers reach you. Phone and email are required."
+                description="Phone number is required. Other contact details are optional."
               >
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Phone number" required error={errors.phone}>
@@ -1796,7 +1846,7 @@ export const CreateBusiness = () => {
                   ))}
                 </div>
 
-                <Field label="Email address" required error={errors.email}>
+                <Field label="Email address" optional error={errors.email}>
                   <div className="relative">
                     <Mail className={ICON} />
                     <input
@@ -1817,7 +1867,7 @@ export const CreateBusiness = () => {
                 description="Help customers find you on the map."
               >
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Address / Landmark" required error={errors.address}>
+                  <Field label="Address / Landmark" optional>
                     <div className="relative">
                       <MapPin className={ICON} />
                       <input
@@ -1830,7 +1880,7 @@ export const CreateBusiness = () => {
                     </div>
                   </Field>
 
-                  <Field label="City / Town" required error={errors.city}>
+                  <Field label="City / Town" optional>
                     <div className="relative">
                       <MapPin className={ICON} />
                       <input
@@ -2016,7 +2066,9 @@ export const CreateBusiness = () => {
               >
                 {/* Banner */}
                 <div>
-                  <p className={`${LABEL} mb-1`}>Banner image</p>
+                  <p className={`${LABEL} mb-1`}>
+                    Banner image <span className="text-error">*</span>
+                  </p>
                   <p className="mb-3.5 font-sans text-xs text-on-surface-variant">
                     Wide image shown at the top of your profile. Recommended
                     1200 × 400 px.
@@ -2072,6 +2124,11 @@ export const CreateBusiness = () => {
                     className="hidden"
                     onChange={handleBannerChange}
                   />
+                  {errors.bannerImage && (
+                    <p className="mt-1.5 font-sans text-xs font-medium text-error">
+                      {errors.bannerImage}
+                    </p>
+                  )}
                 </div>
 
                 {/* Gallery */}

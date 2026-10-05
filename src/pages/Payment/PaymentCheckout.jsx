@@ -269,30 +269,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ShieldCheck,
-  CreditCard,
-  Smartphone,
   Store,
   MapPin,
-  CheckCircle2,
   ArrowLeft,
   Lock,
   Tag,
 } from 'lucide-react';
 
 import { useRegistration } from '../../context/RegistrationContext';
-import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { showError } from '../../lib/alerts';
-
-const ACCENT = '#14b8a6';
-const ACCENT_DEEP = '#0f766e';
 
 export const PaymentCheckout = () => {
   const navigate = useNavigate();
 
   const { formData } = useRegistration();
-  const { user } = useAuth();
 
   const [paying, setPaying] = useState(false);
   const [priceAmount, setPriceAmount] = useState(null);
@@ -455,6 +446,9 @@ export const PaymentCheckout = () => {
 
         description:
           formData.description,
+
+        descriptionSections:
+          formData.descriptionSections || [],
 
         additionalPhones:
           (formData.additionalPhones || []).filter((phone) => phone.trim()),
@@ -647,7 +641,7 @@ export const PaymentCheckout = () => {
       // 6. Verify payment
       // ----------------------------------------------
 
-      await api.payments.checkout({
+      const paymentResult = await api.payments.checkout({
         businessId:
           business._id,
 
@@ -662,12 +656,14 @@ export const PaymentCheckout = () => {
         '/payment/success',
         {
           state: {
+            ...paymentResult,
+
             businessId:
               business._id,
 
             orderId,
 
-            business,
+            business: paymentResult.business || business,
           },
         }
       );
@@ -706,123 +702,18 @@ export const PaymentCheckout = () => {
           Back to Form
         </Link>
 
-        <h1 className="font-headline text-2xl md:text-3xl font-bold text-white mb-2">
+        <h1 className="font-headline text-2xl md:text-3xl font-bold text-white mb-4">
           Complete Payment
         </h1>
 
-        <p className="font-sans text-sm text-white/60 mb-8">
-          Secure checkout to publish your listing at{' '}
-          <span className="text-white/80 font-semibold">
-            zyphoriz.in
-          </span>
-        </p>
+       
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-          {/* PAYMENT */}
-
-          <div className="lg:col-span-3 space-y-4">
-
-            <div className="rounded-2xl p-5 border border-[#14b8a6] bg-[#14b8a6]/10">
-
-              <div className="flex items-center gap-3">
-
-                <div className="w-10 h-10 rounded-xl bg-[#14b8a6]/15 flex items-center justify-center">
-
-                  <CreditCard
-                    className="w-5 h-5 text-[#5eead4]"
-                  />
-
-                </div>
-
-                <div>
-
-                  <p className="font-sans font-semibold text-sm text-white">
-                    Cashfree Secure Checkout
-                  </p>
-
-                  <p className="text-xs text-white/60 mt-1">
-                    Pay securely using UPI, cards,
-                    net banking and supported payment
-                    methods.
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Pay Button */}
-
-            <form onSubmit={handlePay}>
-
-              <button
-                type="submit"
-                disabled={paying || priceAmount === null || Boolean(priceError)}
-                className="
-                  w-full
-                  flex
-                  items-center
-                  justify-center
-                  gap-2.5
-                  text-white
-                  font-sans
-                  font-bold
-                  py-4
-                  rounded-xl
-                  transition-all
-                  text-base
-                  mt-2
-                  bg-gradient-to-r
-                  from-[#0f766e]
-                  to-[#14b8a6]
-                  hover:from-[#0d6b64]
-                  hover:to-[#0ea5a0]
-                  active:scale-[0.98]
-                  shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)]
-                  disabled:opacity-60
-                  disabled:cursor-not-allowed
-                "
-              >
-
-                {paying ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-
-                    Opening Secure Checkout...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-
-                    Pay Securely
-                  </>
-                )}
-
-              </button>
-
-            </form>
-
-            <p className="text-center font-sans text-xs text-white/50 flex items-center justify-center gap-1.5">
-
-              <ShieldCheck className="w-3.5 h-3.5 text-[#5eead4]" />
-
-              Secure payment powered by Cashfree
-
-            </p>
-
-          </div>
-
-          {/* ORDER SUMMARY */}
-
-          <div className="lg:col-span-2">
-
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-4 sticky top-6 backdrop-blur-md shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)]">
-
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-6 space-y-4 backdrop-blur-md shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)]">
+{/* 
               <h2 className="font-headline text-lg font-bold text-white">
                 Order Summary
-              </h2>
+              </h2> */}
 
               {/* Business */}
 
@@ -874,7 +765,7 @@ export const PaymentCheckout = () => {
                   </p>
 
                   <p className="font-mono text-sm font-semibold text-[#5eead4] break-all">
-                    zyphoriz.in/
+                    zyphoriz.com/
                     {formData.slug}
                   </p>
 
@@ -923,39 +814,26 @@ export const PaymentCheckout = () => {
                 </p>
               )}
 
-              {/* Included */}
-
-              <div className="space-y-2 pt-1">
-
-                {[
-                  'Dedicated URL at zyphoriz.in/{name}',
-                  'Verified business badge',
-                  'Direct call & WhatsApp button',
-                  'Category listing & search',
-                  
-                ].map((item) => (
-
-                  <div
-                    key={item}
-                    className="flex items-start gap-2 font-sans text-xs text-white/70"
-                  >
-
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#14b8a6] flex-shrink-0 mt-0.5" />
-
-                    <span>
-                      {item}
-                    </span>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-            </div>
-
+              <form onSubmit={handlePay}>
+                <button
+                  type="submit"
+                  disabled={paying || priceAmount === null || Boolean(priceError)}
+                  className="w-full flex items-center justify-center gap-2.5 text-white font-sans font-bold py-4 rounded-xl transition-all text-base bg-gradient-to-r from-[#0f766e] to-[#14b8a6] hover:from-[#0d6b64] hover:to-[#0ea5a0] active:scale-[0.98] shadow-[0_14px_30px_-12px_rgba(20,184,166,0.65)] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {paying ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Opening Secure Checkout...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      Pay Securely
+                    </>
+                  )}
+                </button>
+              </form>
           </div>
-
         </div>
 
       </div>

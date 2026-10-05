@@ -558,11 +558,11 @@ export const Home = () => {
       title: "Call, WhatsApp & directions",
       desc: "One-tap buttons so customers can call you, message you on WhatsApp, or get directions instantly.",
     },
-    {
-      icon: QrCode,
-      title: "QR code for your shop",
-      desc: "Print it on your counter, visiting card, packaging, or window. Customers scan and reach you.",
-    },
+    // {
+    //   icon: QrCode,
+    //   title: "QR code for your shop",
+    //   desc: "Print it on your counter, visiting card, packaging, or window. Customers scan and reach you.",
+    // },
     {
       icon: MapPin,
       title: "Address & hours",

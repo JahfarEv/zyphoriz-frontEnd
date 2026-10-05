@@ -13,8 +13,8 @@ export const MobileNavigation = () => {
 
   const navItems = [
     { label: 'Home', path: '/', icon: Home },
-    { label: 'Categories', path: '/#categories', icon: Grid3X3 },
-    { label: 'List Business', path: '/create', icon: PlusCircle },
+    // { label: 'Categories', path: '/#categories', icon: Grid3X3 },
+    { label: 'Create', path: '/create', icon: PlusCircle },
   ];
 
   return (

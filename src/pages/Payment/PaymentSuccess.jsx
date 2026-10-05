@@ -89,10 +89,11 @@
 // };
 
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, Store, ShieldCheck, Copy, ExternalLink } from 'lucide-react';
 import { useRegistration } from '../../context/RegistrationContext';
+import { api } from '../../lib/api';
 
 const ACCENT = '#14b8a6';
 const ACCENT_SOFT = '#5eead4';
@@ -102,10 +103,44 @@ export const PaymentSuccess = () => {
   const { state } = useLocation();
   const business = state?.business;
   const payment = state?.payment;
+  const [price, setPrice] = useState(null);
+  const [priceError, setPriceError] = useState('');
   const txnId = payment?.transactionId || 'Processing';
   const slug = business?.slug || formData.slug || 'your-business';
   const businessName = business?.name || formData.name || 'Your business';
   const businessUrl = `${window.location.host}/${slug}`;
+  const paymentAmount = Number(payment?.amount);
+  const hasPaymentAmount = Number.isFinite(paymentAmount) && paymentAmount >= 0;
+
+  useEffect(() => {
+    if (hasPaymentAmount) return undefined;
+
+    let isActive = true;
+    api.payments.price()
+      .then((result) => {
+        const amount = Number(result?.amount);
+        if (!Number.isFinite(amount) || amount < 0) {
+          throw new Error('The payment amount is unavailable.');
+        }
+        if (isActive) setPrice({ amount, currency: result.currency || 'INR' });
+      })
+      .catch((error) => {
+        if (isActive) setPriceError(error.message || 'Unable to load the payment amount.');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [hasPaymentAmount]);
+
+  const amountPaid = hasPaymentAmount ? paymentAmount : price?.amount;
+  const currency = payment?.currency || price?.currency || 'INR';
+  const formattedAmount = amountPaid === undefined
+    ? priceError ? 'Unavailable' : 'Loading...'
+    : new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency,
+      }).format(amountPaid);
 
   const copyUrl = () => {
     navigator.clipboard?.writeText(`${window.location.protocol}//${businessUrl}`);
@@ -151,7 +186,7 @@ export const PaymentSuccess = () => {
                 <Copy className="w-3.5 h-3.5" /> Copy URL
               </button>
               <Link
-                to={`/${slug}`}
+                to={`/${slug}?ownerView=1`}
                 className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold text-[#5eead4] hover:bg-[#14b8a6]/20 px-3 py-1.5 rounded-lg transition-colors border border-[#14b8a6]/30"
               >
                 <ExternalLink className="w-3.5 h-3.5" /> View Page
@@ -171,13 +206,18 @@ export const PaymentSuccess = () => {
             </div>
             <div className="flex justify-between font-bold">
               <span className="text-white">Amount Paid:</span>
-              <span className="text-[#5eead4]">₹499</span>
+              <span className="text-[#5eead4]">{formattedAmount}</span>
             </div>
+            {priceError && !hasPaymentAmount && (
+              <p className="text-right text-xs text-red-300" role="alert">
+                {priceError}
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Link to={`/${slug}`} className="flex-1">
+            <Link to={`/${slug}?ownerView=1`} className="flex-1">
               <button className="w-full flex items-center justify-center gap-2 text-white font-sans font-bold py-3 rounded-xl transition-all text-sm
                                  bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
                                  hover:from-[#0d6b64] hover:to-[#0ea5a0]

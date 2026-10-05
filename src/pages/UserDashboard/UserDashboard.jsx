@@ -333,11 +333,11 @@ export const UserDashboard = () => {
 
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    to={`/${business.slug}`}
+                    to={`/${business.slug}?ownerView=1`}
                     target="_blank"
                     className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/30 transition-colors"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> View
+                    <ExternalLink className="w-3.5 h-3.5" /> View my page
                   </Link>
 
                   <Link

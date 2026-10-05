@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   MapPin,
@@ -19,10 +19,13 @@ import {
   Star,
   Store,
   ArrowRight,
+  LayoutDashboard,
+  LogOut,
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { LoadingScreen } from "../../components/common/LoadingScreen";
 import { useRegistration } from "../../context/RegistrationContext";
+import { useAuth } from "../../context/AuthContext";
 import { getTemplateConfig, DEFAULT_TEMPLATE } from "../../data/templates";
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.poketstor.platform&pcampaignid=web_share";
@@ -54,7 +57,11 @@ const normaliseHours = (hours) => {
 
 export const BusinessProfile = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, loading: authLoading, logout } = useAuth();
   const { formData, registrationCompleted } = useRegistration();
+  const ownerViewRequested = searchParams.get("ownerView") === "1";
 
   // Try newly created business from context if just redirected from registration
   const contextBusiness =
@@ -77,6 +84,7 @@ export const BusinessProfile = () => {
           location: `${formData.address}, ${formData.city}`,
           city: formData.city,
           description: formData.description,
+          descriptionSections: formData.descriptionSections,
           verified: true,
           trending: false,
           rating: null,
@@ -94,6 +102,7 @@ export const BusinessProfile = () => {
   const [loading, setLoading] = useState(!contextBusiness);
   const [error, setError] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [isOwnerView, setIsOwnerView] = useState(false);
 
   useEffect(() => {
     if (contextBusiness) {
@@ -108,6 +117,35 @@ export const BusinessProfile = () => {
       .catch((requestError) => setError(requestError.message))
       .finally(() => setLoading(false));
   }, [slug, contextBusiness]);
+
+  useEffect(() => {
+    let isActive = true;
+    setIsOwnerView(false);
+
+    if (!ownerViewRequested || authLoading || !user) return undefined;
+
+    api.businesses
+      .mine()
+      .then(({ businesses = [] }) => {
+        if (isActive) {
+          setIsOwnerView(
+            businesses.some((ownedBusiness) => ownedBusiness.slug === slug),
+          );
+        }
+      })
+      .catch((requestError) => {
+        console.error("Could not verify business owner view:", requestError);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [authLoading, ownerViewRequested, slug, user]);
+
+  const handleOwnerLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   useEffect(() => {
     if (!selectedPhoto) return undefined;
@@ -173,6 +211,7 @@ export const BusinessProfile = () => {
     name,
     category,
     description,
+    descriptionSections = [],
     phone,
     additionalPhones = [],
     whatsapp,
@@ -245,6 +284,35 @@ export const BusinessProfile = () => {
         <meta name="twitter:description" content={shareDescription} />
         <meta name="twitter:image" content={shareImage} />
       </Helmet>
+
+      {isOwnerView && (
+        <header className="relative z-10 flex w-full items-center justify-between gap-3 border-b border-white/10 bg-[#16292c] px-4 py-3 text-white md:px-8">
+          <Link to="/" aria-label="Zyphoriz home" className="flex-shrink-0">
+            <img
+              src="/image/zypho.png"
+              alt="Zyphoriz"
+              className="h-8 w-auto max-w-[100px] object-contain md:h-9 md:max-w-[150px]"
+            />
+          </Link>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:px-3"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>My Dashboard</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleOwnerLogout}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:px-3"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </header>
+      )}
 
       <div
         className="w-full min-h-screen pb-12 relative overflow-hidden"
@@ -363,7 +431,7 @@ export const BusinessProfile = () => {
                 </p>
               )}
 
-              {rating > 0 && (
+              {/* {rating > 0 && (
                 <div className="flex items-center gap-1.5 mb-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -392,7 +460,7 @@ export const BusinessProfile = () => {
                   <MapPin className="w-3.5 h-3.5" />
                   {[address, city].filter(Boolean).join(", ") || location}
                 </p>
-              )}
+              )} */}
             </div>
 
             {/* Action Buttons */}
@@ -432,28 +500,36 @@ export const BusinessProfile = () => {
             {/* LEFT MAIN COLUMN */}
             <div className="lg:col-span-2 space-y-6">
               {/* About */}
-              <div
-                className="rounded-2xl p-6 shadow-sm relative overflow-hidden border"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  borderColor: `${theme.accent}33`,
-                }}
-              >
-                <div
-                  className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20"
-                  style={{ backgroundColor: theme.accent }}
-                />
-                <h2 className="relative font-headline text-lg font-bold mb-3 flex items-center gap-2">
-                  <span
-                    className="h-6 w-1 rounded-full"
-                    style={{ backgroundColor: theme.accent }}
-                  />
-                  About
-                </h2>
-                <p className="font-sans text-sm opacity-70 leading-relaxed">
-                  {description || "No description provided."}
-                </p>
-              </div>
+              {(descriptionSections.length
+                ? descriptionSections
+                : [{ title: "About", description }]
+              )
+                .filter((section) => section.title?.trim() || section.description?.trim())
+                .map((section, index) => (
+                  <div
+                    key={`${section.title || "section"}-${index}`}
+                    className="rounded-2xl p-6 shadow-sm relative overflow-hidden border"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.04)",
+                      borderColor: `${theme.accent}33`,
+                    }}
+                  >
+                    <div
+                      className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20"
+                      style={{ backgroundColor: theme.accent }}
+                    />
+                    <h2 className="relative font-headline text-lg font-bold mb-3 flex items-center gap-2">
+                      <span
+                        className="h-6 w-1 rounded-full"
+                        style={{ backgroundColor: theme.accent }}
+                      />
+                      {section.title?.trim() || "About"}
+                    </h2>
+                    <p className="font-sans text-sm opacity-70 leading-relaxed whitespace-pre-line">
+                      {section.description}
+                    </p>
+                  </div>
+                ))}
 
               {/* Services */}
               {services.length > 0 && (
@@ -797,7 +873,7 @@ export const BusinessProfile = () => {
               {/* Opening Hours */}
               {hoursList.length > 0 && (
                 <div
-                  className="rounded-2xl p-5 shadow-sm border"
+                  className="min-h-[340px] rounded-2xl p-6 shadow-sm border"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.04)",
                     borderColor: `${theme.accent}33`,
@@ -810,11 +886,11 @@ export const BusinessProfile = () => {
                     />
                     Opening Hours
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {hoursList.map((h, i) => (
                       <div
                         key={i}
-                        className="flex justify-between font-sans text-xs py-1 border-b border-white/10 last:border-0"
+                        className="flex justify-between font-sans text-xs py-2 border-b border-white/10 last:border-0"
                       >
                         <span className="opacity-70">{h.day}</span>
                         <span className="font-semibold opacity-90">

@@ -113,7 +113,7 @@ export const Navbar = () => {
           <Link to={user ? '/create' : '/auth?redirect=/create'} className="inline-flex items-center gap-1.5 bg-[linear-gradient(135deg,#16292c_0%,#2f756d_98%,#b94630_100%)] text-on-primary font-sans font-bold px-4 py-2 rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all text-sm shadow-sm">
             {user ? <PlusCircle className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
             <span className="hidden sm:inline">{user ? 'Create Your Page' : 'Log in to Page'}</span>
-            <span className="sm:hidden">{user ? 'List' : 'Login'}</span>
+            <span className="sm:hidden">{user ? 'Create' : 'Login'}</span>
           </Link>
         </div>
       </div>

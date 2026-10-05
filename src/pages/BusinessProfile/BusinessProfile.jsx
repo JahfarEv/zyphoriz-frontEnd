@@ -272,6 +272,7 @@ export const BusinessProfile = () => {
     <>
       <Helmet>
         <title>{shareTitle}</title>
+        <link rel="icon" href={shareImage} />
         <meta name="description" content={shareDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={shareTitle} />

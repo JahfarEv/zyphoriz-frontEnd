@@ -532,6 +532,7 @@ export const PaymentCheckout = () => {
         paymentSessionId,
         orderId,
         amount: orderAmount,
+        environment,
       } =
         await api.payments.createOrder({
           businessId:
@@ -541,6 +542,13 @@ export const PaymentCheckout = () => {
       if (!paymentSessionId) {
         throw new Error(
           'Cashfree payment session was not created'
+        );
+      }
+
+      const paymentEnvironment = environment?.toUpperCase();
+      if (!['PRODUCTION', 'SANDBOX'].includes(paymentEnvironment)) {
+        throw new Error(
+          'Cashfree payment environment is missing or invalid'
         );
       }
 
@@ -563,11 +571,7 @@ export const PaymentCheckout = () => {
 
       const cashfree =
         window.Cashfree({
-          mode:
-            import.meta.env.VITE_CASHFREE_MODE ===
-            'production'
-              ? 'production'
-              : 'sandbox',
+          mode: paymentEnvironment.toLowerCase(),
         });
 
       // ----------------------------------------------

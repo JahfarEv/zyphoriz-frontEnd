@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Copy,
@@ -13,13 +14,15 @@ import {
   ShieldCheck,
   WalletCards,
   Building2,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
-import { confirmAction, showError } from "../../lib/alerts";
+import { confirmAction, showAlert, showError } from "../../lib/alerts";
 
 const ACCENT = "#14b8a6";
 const ACCENT_SOFT = "#5eead4";
+const MINIMUM_REDEMPTION = 1000;
 
 export const UserDashboard = () => {
   const navigate = useNavigate();
@@ -28,10 +31,20 @@ export const UserDashboard = () => {
   const [referrals, setReferrals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [redeemModalOpen, setRedeemModalOpen] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState("bank");
+  const [payoutDetails, setPayoutDetails] = useState({
+    accountHolderName: "",
+    accountNumber: "",
+    ifscCode: "",
+    branch: "",
+    upiId: "",
+  });
+  const [submittingRedemption, setSubmittingRedemption] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
-    Promise.all([api.businesses.mine(), api.referrals()])
+    Promise.all([api.businesses.mine(), api.referrals.get()])
       .then(([businessData, referralData]) => {
         setBusinesses(businessData.businesses || []);
         setReferrals(referralData);
@@ -93,22 +106,68 @@ export const UserDashboard = () => {
     setTimeout(() => setNotice(""), 2500);
   };
 
-  const handleRedeem = () => {
-    const earnings = referrals?.referralEarnings || 0;
-    if (!earnings) {
-      setNotice("Earn at least ₹50 in referral commission before redeeming.");
-      setTimeout(() => setNotice(""), 2500);
+  const handleRedeem = async () => {
+    if (referrals?.pendingRedemption) {
+      await showAlert({
+        icon: "info",
+        title: "Redemption request pending",
+        text: "Your existing referral redemption request is being reviewed.",
+      });
       return;
     }
-    setNotice(
-      "Your redeem request will be available after payout details are added.",
-    );
-    setTimeout(() => setNotice(""), 3500);
+
+    const earnings = Number(referrals?.referralEarnings) || 0;
+    if (earnings < MINIMUM_REDEMPTION) {
+      await showAlert({
+        icon: "warning",
+        title: "Minimum not reached",
+        text: `You need at least ₹${MINIMUM_REDEMPTION} in referral commission to redeem. Your current balance is ₹${earnings}.`,
+      });
+      return;
+    }
+
+    setRedeemModalOpen(true);
+  };
+
+  const handlePayoutFieldChange = (event) => {
+    const { name, value } = event.target;
+    setPayoutDetails((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleRedemptionSubmit = async (event) => {
+    event.preventDefault();
+    setSubmittingRedemption(true);
+    try {
+      const result = await api.referrals.redeem({ payoutMethod, payoutDetails });
+      setReferrals((current) => ({
+        ...current,
+        referralEarnings: result.referralEarnings,
+        pendingRedemption: result.pendingRedemption,
+      }));
+      setRedeemModalOpen(false);
+      setPayoutDetails({
+        accountHolderName: "",
+        accountNumber: "",
+        ifscCode: "",
+        branch: "",
+        upiId: "",
+      });
+      await showAlert({
+        icon: "success",
+        title: "Request submitted",
+        text: `Your ₹${result.redemption.amount} redemption request is pending review.`,
+      });
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setSubmittingRedemption(false);
+    }
   };
 
   const ownerInitial = (user?.email || "O").charAt(0).toUpperCase();
 
   return (
+    <>
     <main className="w-full min-h-screen bg-[#16292C] px-4 md:px-8 py-8 relative overflow-hidden">
       {/* Ambient brand glow */}
       <div className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(circle_at_8%_0%,rgba(20,184,166,0.16),transparent_42%),radial-gradient(circle_at_92%_100%,rgba(232,162,61,0.08),transparent_50%)]" />
@@ -239,7 +298,7 @@ export const UserDashboard = () => {
               </button>
               <button
                 onClick={handleRedeem}
-                disabled={!(referrals?.referralEarnings > 0)}
+                disabled={loading}
                 className="inline-flex items-center justify-center gap-2 border border-white/50 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transition-colors"
               >
                 <WalletCards className="w-4 h-4" /> Redeem
@@ -258,13 +317,18 @@ export const UserDashboard = () => {
             </div>
             <div>
               <p className="font-sans text-[10px] sm:text-xs text-white/75">
-                Commission
+                Available commission
               </p>
               <p className="font-headline text-xl sm:text-2xl font-bold">
                 ₹{referrals?.referralEarnings || 0}
               </p>
             </div>
           </div>
+          {referrals?.pendingRedemption && (
+            <p className="relative mt-3 rounded-lg border border-white/20 bg-black/10 px-3 py-2 text-xs text-white/85">
+              ₹{referrals.pendingRedemption.amount} redemption request pending review.
+            </p>
+          )}
         </section>
 
         {loading ? (
@@ -372,5 +436,170 @@ export const UserDashboard = () => {
         )}
       </div>
     </main>
+    {redeemModalOpen &&
+      createPortal(
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !submittingRedemption) {
+              setRedeemModalOpen(false);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="redemption-title"
+            className="my-auto w-full max-w-lg rounded-2xl border border-white/15 bg-[#16292C] p-5 text-white shadow-2xl sm:p-6"
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 id="redemption-title" className="font-headline text-xl font-bold">
+                  Redeem referral commission
+                </h2>
+                <p className="mt-1 text-sm text-white/65">
+                  Available to redeem: ₹{referrals?.referralEarnings || 0}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRedeemModalOpen(false)}
+                disabled={submittingRedemption}
+                aria-label="Close redemption form"
+                className="rounded-lg p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRedemptionSubmit} className="space-y-4">
+              <fieldset>
+                <legend className="mb-2 text-sm font-semibold text-white/85">
+                  Payout method
+                </legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "bank", label: "Bank transfer" },
+                    { value: "upi", label: "UPI" },
+                  ].map((method) => (
+                    <button
+                      key={method.value}
+                      type="button"
+                      onClick={() => setPayoutMethod(method.value)}
+                      aria-pressed={payoutMethod === method.value}
+                      className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        payoutMethod === method.value
+                          ? "border-[#14b8a6] bg-[#14b8a6]/15 text-[#5eead4]"
+                          : "border-white/15 text-white/70 hover:bg-white/5"
+                      }`}
+                    >
+                      {method.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label className="block text-sm font-medium text-white/80">
+                Account holder name
+                <input
+                  name="accountHolderName"
+                  value={payoutDetails.accountHolderName}
+                  onChange={handlePayoutFieldChange}
+                  required
+                  minLength={2}
+                  maxLength={120}
+                  autoComplete="name"
+                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-[#14b8a6]"
+                />
+              </label>
+
+              {payoutMethod === "bank" ? (
+                <>
+                  <label className="block text-sm font-medium text-white/80">
+                    Account number
+                    <input
+                      name="accountNumber"
+                      value={payoutDetails.accountNumber}
+                      onChange={handlePayoutFieldChange}
+                      required
+                      inputMode="numeric"
+                      pattern="[0-9]{8,32}"
+                      title="Enter an account number with 8 to 32 digits."
+                      autoComplete="off"
+                      className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-[#14b8a6]"
+                    />
+                  </label>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block text-sm font-medium text-white/80">
+                      IFSC code
+                      <input
+                        name="ifscCode"
+                        value={payoutDetails.ifscCode}
+                        onChange={handlePayoutFieldChange}
+                        required
+                        pattern="[A-Za-z]{4}0[A-Za-z0-9]{6}"
+                        title="Enter a valid 11-character IFSC code."
+                        autoComplete="off"
+                        className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm uppercase text-white outline-none transition focus:border-[#14b8a6]"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-white/80">
+                      Branch
+                      <input
+                        name="branch"
+                        value={payoutDetails.branch}
+                        onChange={handlePayoutFieldChange}
+                        required
+                        minLength={2}
+                        maxLength={120}
+                        autoComplete="off"
+                        className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-[#14b8a6]"
+                      />
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <label className="block text-sm font-medium text-white/80">
+                  UPI ID
+                  <input
+                    name="upiId"
+                    value={payoutDetails.upiId}
+                    onChange={handlePayoutFieldChange}
+                    required
+                    pattern="[\w.-]{2,100}@[A-Za-z][\w.-]{1,30}"
+                    title="Enter a valid UPI ID, for example name@bank."
+                    autoComplete="off"
+                    className="mt-1.5 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-[#14b8a6]"
+                  />
+                </label>
+              )}
+
+              <p className="text-xs leading-relaxed text-white/50">
+                Your request will be reviewed before payment. Payout details are only used to process this request.
+              </p>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setRedeemModalOpen(false)}
+                  disabled={submittingRedemption}
+                  className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/75 transition-colors hover:bg-white/5 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingRedemption}
+                  className="rounded-xl bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {submittingRedemption ? "Submitting..." : "Submit request"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>,
+        document.body,
+      )}
+    </>
   );
 };

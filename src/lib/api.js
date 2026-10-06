@@ -119,5 +119,12 @@ export const api = {
     }),
     mine: () => request('/payments/mine'),
   },
-  referrals: () => request('/users/referrals'),
+  referrals: {
+    get: () => request('/users/referrals'),
+    redeem: (body) =>
+      request('/users/referrals/redeem', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
 };

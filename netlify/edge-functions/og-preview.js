@@ -22,17 +22,58 @@ const getAbsoluteImageUrl = (image) => {
   }
 };
 
+// const getSocialImageUrl = (image) => {
+//   const url = new URL(getAbsoluteImageUrl(image));
+//   if (url.hostname === 'res.cloudinary.com' && url.pathname.includes('/image/upload/')) {
+//     url.pathname = url.pathname.replace(
+//       '/image/upload/',
+//       '/image/upload/c_fill,w_1200,h_630,g_auto,q_auto/',
+//     );
+//     return { url: url.href, dimensions: { width: 1200, height: 630 } };
+//   }
+//   return { url: url.href, dimensions: null };
+// };
+
 const getSocialImageUrl = (image) => {
   const url = new URL(getAbsoluteImageUrl(image));
-  if (url.hostname === 'res.cloudinary.com' && url.pathname.includes('/image/upload/')) {
+
+  // Force Cloudinary images into WhatsApp/Facebook recommended
+  // large-preview dimensions: 1200 x 630 (1.91:1)
+  if (
+    url.hostname === 'res.cloudinary.com' &&
+    url.pathname.includes('/image/upload/')
+  ) {
     url.pathname = url.pathname.replace(
       '/image/upload/',
-      '/image/upload/c_fill,w_1200,h_630,g_auto,q_auto/',
+      '/image/upload/c_fill,w_1200,h_630,g_auto,q_auto,f_jpg/'
     );
-    return { url: url.href, dimensions: { width: 1200, height: 630 } };
-  }
-  return { url: url.href, dimensions: null };
+
+    // return {
+    //   url: url.href,
+    //   dimensions: {
+    //     width: 1200,
+    //     height: 630,
+    //   },
+    // };
+
+
+    const transformedUrl = url.href;
+
+return {
+  url: `${transformedUrl}?v=2`,
+  dimensions: {
+    width: 1200,
+    height: 630,
+  },
 };
+  }
+
+  return {
+    url: url.href,
+    dimensions: null,
+  };
+};
+
 
 const renderMetadata = ({ title, description, url, image, imageDimensions }) => `<!doctype html>
 <html lang="en">
@@ -48,7 +89,14 @@ const renderMetadata = ({ title, description, url, image, imageDimensions }) => 
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(url)}">
     <meta property="og:image" content="${escapeHtml(image)}">
-    <meta property="og:image:alt" content="${escapeHtml(title)}">
+<meta property="og:image:secure_url" content="${escapeHtml(image)}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="${escapeHtml(title)}">
+
+${imageDimensions ? `
+<meta property="og:image:width" content="${imageDimensions.width}">
+<meta property="og:image:height" content="${imageDimensions.height}">
+` : ''}
     ${imageDimensions ? `<meta property="og:image:width" content="${imageDimensions.width}">\n    <meta property="og:image:height" content="${imageDimensions.height}">` : ''}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(title)}">

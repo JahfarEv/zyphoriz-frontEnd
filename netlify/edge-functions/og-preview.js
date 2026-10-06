@@ -22,7 +22,19 @@ const getAbsoluteImageUrl = (image) => {
   }
 };
 
-const renderMetadata = ({ title, description, url, image }) => `<!doctype html>
+const getSocialImageUrl = (image) => {
+  const url = new URL(getAbsoluteImageUrl(image));
+  if (url.hostname === 'res.cloudinary.com' && url.pathname.includes('/image/upload/')) {
+    url.pathname = url.pathname.replace(
+      '/image/upload/',
+      '/image/upload/c_fill,w_1200,h_630,g_auto,q_auto/',
+    );
+    return { url: url.href, dimensions: { width: 1200, height: 630 } };
+  }
+  return { url: url.href, dimensions: null };
+};
+
+const renderMetadata = ({ title, description, url, image, imageDimensions }) => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -37,6 +49,7 @@ const renderMetadata = ({ title, description, url, image }) => `<!doctype html>
     <meta property="og:url" content="${escapeHtml(url)}">
     <meta property="og:image" content="${escapeHtml(image)}">
     <meta property="og:image:alt" content="${escapeHtml(title)}">
+    ${imageDimensions ? `<meta property="og:image:width" content="${imageDimensions.width}">\n    <meta property="og:image:height" content="${imageDimensions.height}">` : ''}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
@@ -87,12 +100,16 @@ export default async (request, context) => {
   const description = business.description
     || business.descriptionSections?.[0]?.description
     || `Discover ${business.name} on Zyphoriz.`;
+  const socialImage = getSocialImageUrl(
+    business.coverImage || business.bannerImage || business.image,
+  );
 
   return new Response(renderMetadata({
     title: `${business.name} | Zyphoriz`,
     description,
     url: canonicalUrl,
-    image: getAbsoluteImageUrl(business.coverImage || business.image),
+    image: socialImage.url,
+    imageDimensions: socialImage.dimensions,
   }), {
     status: 200,
     headers: {

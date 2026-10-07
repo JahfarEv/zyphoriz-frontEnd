@@ -342,26 +342,26 @@ export const PaymentCheckout = () => {
     : formatPrice(priceGstAmount);
 
   // --------------------------------------------------
-  // Load Cashfree SDK
+  // Load Razorpay Checkout SDK
   // --------------------------------------------------
 
-  const loadCashfree = () =>
+  const loadRazorpay = () =>
     new Promise((resolve, reject) => {
-      if (window.Cashfree) {
+      if (window.Razorpay) {
         resolve(true);
         return;
       }
 
       const script = document.createElement('script');
 
-      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
 
       script.onload = () => resolve(true);
 
       script.onerror = () =>
         reject(
           new Error(
-            'Unable to load Cashfree Checkout'
+            'Unable to load Razorpay Checkout'
           )
         );
 
@@ -381,10 +381,10 @@ export const PaymentCheckout = () => {
 
     try {
       // ----------------------------------------------
-      // 1. Load Cashfree
+      // 1. Load Razorpay
       // ----------------------------------------------
 
-      await loadCashfree();
+      await loadRazorpay();
 
       // ----------------------------------------------
       // 2. Create Business
@@ -525,30 +525,22 @@ export const PaymentCheckout = () => {
       }
 
       // ----------------------------------------------
-      // 3. Create Cashfree Order
+      // 3. Create Razorpay Order
       // ----------------------------------------------
 
       const {
-        paymentSessionId,
-        orderId,
+        order,
+        keyId,
         amount: orderAmount,
-        environment,
       } =
         await api.payments.createOrder({
           businessId:
             business._id,
         });
 
-      if (!paymentSessionId) {
+      if (!order?.id || !keyId) {
         throw new Error(
-          'Cashfree payment session was not created'
-        );
-      }
-
-      const paymentEnvironment = environment?.toUpperCase();
-      if (!['PRODUCTION', 'SANDBOX'].includes(paymentEnvironment)) {
-        throw new Error(
-          'Cashfree payment environment is missing or invalid'
+          'Razorpay order was not created'
         );
       }
 
@@ -556,100 +548,43 @@ export const PaymentCheckout = () => {
         setPriceAmount(Number(orderAmount));
       }
 
-      sessionStorage.setItem(
-        'pendingBusinessId',
-        business._id
-      );
-      sessionStorage.setItem(
-        'pendingOrderId',
-        orderId
-      );
-
-      // ----------------------------------------------
-      // 4. Initialize Cashfree
-      // ----------------------------------------------
-
-      const cashfree =
-        window.Cashfree({
-          mode: paymentEnvironment.toLowerCase(),
-        });
-
-      // ----------------------------------------------
-      // 5. Open Cashfree Checkout
-      // ----------------------------------------------
-
-      const result =
-        await new Promise(
-          (resolve, reject) => {
-
-            let completed = false;
-
-            const finishSuccess = () => {
-              if (completed) return;
-
-              completed = true;
-
-              resolve(true);
-            };
-
-            const finishError = (
-              message
-            ) => {
-              if (completed) return;
-
-              completed = true;
-
-              reject(
-                new Error(
-                  message ||
-                  'Payment failed'
-                )
-              );
-            };
-
+      // 4. Open Razorpay Checkout and verify the returned signature.
+      const paymentResult = await new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'Zyphoriz',
+          description: 'Standard business listing',
+          order_id: order.id,
+          prefill: {
+            name: business.name,
+            email: business.email,
+            contact: business.phone,
+          },
+          notes: { businessId: business._id },
+          theme: { color: '#0f766e' },
+          handler: async (paymentResponse) => {
             try {
-              cashfree.checkout({
-                paymentSessionId,
-
-                redirectTarget:
-                  '_self',
+              const result = await api.payments.checkout({
+                businessId: business._id,
+                ...paymentResponse,
               });
-
-              /*
-               * Cashfree redirects the customer to
-               * the return URL configured on your
-               * backend.
-               *
-               * Therefore this promise is not expected
-               * to resolve immediately.
-               */
-
+              resolve(result);
             } catch (error) {
-              finishError(
-                error?.message ||
-                'Unable to open Cashfree Checkout'
-              );
+              reject(error);
             }
-          }
-        );
-
-      // This will normally not execute when using
-      // redirectTarget: "_self", because the browser
-      // redirects to the Cashfree return URL.
-
-      if (!result) {
-        return;
-      }
-
-      // ----------------------------------------------
-      // 6. Verify payment
-      // ----------------------------------------------
-
-      const paymentResult = await api.payments.checkout({
-        businessId:
-          business._id,
-
-        orderId,
+          },
+          modal: {
+            ondismiss: () => reject(new Error('Payment was cancelled')),
+          },
+        });
+        razorpay.on('payment.failed', (response) => {
+          reject(new Error(
+            response.error?.description || 'Payment failed'
+          ));
+        });
+        razorpay.open();
       });
 
       // ----------------------------------------------
@@ -665,8 +600,6 @@ export const PaymentCheckout = () => {
             businessId:
               business._id,
 
-            orderId,
-
             business: paymentResult.business || business,
           },
         }
@@ -674,7 +607,7 @@ export const PaymentCheckout = () => {
 
     } catch (err) {
       console.error(
-        'Cashfree payment error:',
+        'Razorpay payment error:',
         err
       );
 

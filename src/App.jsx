@@ -26,7 +26,8 @@ import { Contact } from "./pages/Contact/Contact";
 import { Terms } from "./pages/Terms/Terms";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { PrivacyPolicy } from "./pages/Privacy/Privacy";
-import PaymentCallback from "./pages/Payment/PaymentCallback";
+import { RefundPolicy } from "./pages/RefundPolicy/RefundPolicy";
+
 
 const RequireAuth = ({ children }) => {
   const { user, loading } = useAuth();
@@ -96,7 +97,7 @@ const AppLayout = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/payment/callback" element={<PaymentCallback />} />
+          <Route path="/refund" element={<RefundPolicy />} />
           {/* Individual business page at /{slug} */}
           <Route path="/:slug" element={<BusinessProfile />} />
           <Route path="*" element={<NotFound />} />

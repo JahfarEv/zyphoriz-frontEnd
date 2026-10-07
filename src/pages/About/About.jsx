@@ -16,54 +16,55 @@ import {
   Mail,
   Globe,
   MapPin,
+  Home,
 } from 'lucide-react';
 
 const VALUES = [
   {
     icon: Compass,
-    title: 'Explore locally',
-    text: 'Find useful places and services around you without the noise of a generic search.',
+    title: 'Your Space. Your Identity.',
+    text: 'Create a stunning digital page that showcases who you are, what you do, and everything in between.',
   },
   {
     icon: ShieldCheck,
-    title: 'Choose with confidence',
-    text: 'Clear business details and verified profiles help you make decisions with confidence.',
+    title: 'One Link. Everything.',
+    text: 'Share your unique URL and QR code on WhatsApp, Instagram, or print it for your shop.',
   },
   {
     icon: HeartHandshake,
-    title: 'Support small business',
-    text: 'Every discovery can become a meaningful visit, booking, or new local connection.',
+    title: 'Built for Everyone',
+    text: 'Made for individuals, creators, services, shops and businesses — no code, no hosting, no designer needed.',
   },
 ];
 
 const WHAT_WE_DO = [
   {
     icon: MapPin,
-    title: 'Local Business Discovery',
-    text: 'Explore businesses and services based on your interests and location.',
+    title: 'Your Own Page',
+    text: 'A professional page at zyphoriz.com/yourname — clean, mobile-friendly, and ready in minutes.',
   },
   {
     icon: Search,
-    title: 'Convenient Search',
-    text: 'Find relevant information through an easy-to-use digital experience.',
+    title: 'Call, WhatsApp & Directions',
+    text: 'One-tap buttons so visitors can call you, message you on WhatsApp, or get directions instantly.',
   },
   {
     icon: Users,
-    title: 'Connecting Communities',
-    text: 'Help customers discover local businesses while giving businesses opportunities to reach potential customers.',
+    title: 'Address, Hours & Gallery',
+    text: 'Show your location, working hours, photo gallery, and Google Maps link so people find you easily.',
   },
   {
     icon: Cpu,
-    title: 'Technology-Driven Experience',
-    text: 'Use modern technology to build a simple, useful, and user-focused platform.',
+    title: 'Verified Badge & Listing',
+    text: 'A verified profile that builds trust and lets visitors browse your products and services.',
   },
 ];
 
 const WHY = [
-  { title: 'Simple', text: 'We aim to make local discovery easy to use.' },
-  { title: 'Useful', text: 'We focus on helping users find relevant information.' },
-  { title: 'Community-Focused', text: 'We want to support connections between people and local businesses.' },
-  { title: 'Innovation-Driven', text: 'We continuously work to improve the digital discovery experience.' },
+  { title: 'No Code', text: 'Easy page builder — create your page in minutes.' },
+  { title: 'One Link', text: 'Everything in one place: contact, location, gallery, services.' },
+  { title: 'Mobile-First', text: 'Your page looks great and works perfectly on any device.' },
+  { title: 'Unlimited Edits', text: 'Update your details, offers, hours, or photos anytime.' },
 ];
 
 const CONTACT = [
@@ -78,6 +79,13 @@ export const About = () => (
     <div className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(circle_at_12%_0%,rgba(20,184,166,0.16),transparent_42%),radial-gradient(circle_at_88%_100%,rgba(232,162,61,0.08),transparent_50%)]" />
 
     <div className="relative max-w-5xl mx-auto px-4 md:px-8 py-12 md:py-16 space-y-10">
+     <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 bg-[#14b8a6]/15 text-[#5eead4] border border-[#14b8a6]/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.16em] mb-4"
+          >
+            <Home className="w-4 h-4" />
+            Back to Home
+          </Link>
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl px-6 py-12 md:px-14 md:py-16 border border-white/10
                           bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#b94630_130%)]
@@ -92,13 +100,13 @@ export const About = () => (
           </span>
 
           <h1 className="max-w-3xl font-headline text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white">
-            Make your next local discovery count.
+            Everything about you, all in one link.
           </h1>
 
           <p className="mt-6 max-w-2xl font-sans text-base md:text-lg leading-8 text-white/85">
-            Welcome to Zyphoriz — Local Discovery Simplified. We help people find businesses,
-            services, and opportunities around them with greater ease, while giving independent
-            owners a simple place to be found.
+            Create your own stunning digital page in minutes. Showcase who you are, what you do,
+            your work, services, photos and contact details — all in one place. Made for
+            individuals, creators, services, shops and businesses.
           </p>
         </div>
       </section>
@@ -129,23 +137,24 @@ export const About = () => (
               Our Mission
             </p>
             <h2 className="font-headline text-2xl md:text-3xl font-bold text-white mt-1">
-              Simplify local discovery.
+              Get your page online in minutes.
             </h2>
           </div>
         </div>
         <p className="font-sans text-sm md:text-base leading-8 text-white/70 max-w-3xl">
-          Our mission is to simplify local discovery by connecting people with businesses and
-          services in their communities through technology.
+          Three simple steps to get your page online and shareable: enter your details, your page
+          goes live instantly at zyphoriz.com/yourname, and you share your unique link and QR code
+          with anyone.
         </p>
       </section>
 
-      {/* What We Do */}
+      {/* What your page looks like */}
       <section className="bg-white/[0.04] border border-white/10 rounded-3xl px-6 py-10 md:px-10 md:py-12 backdrop-blur-md shadow-[0_25px_60px_-25px_rgba(0,0,0,0.7)]">
         <div className="flex items-center gap-3 mb-8">
           <span className="w-8 h-8 rounded-xl bg-[#14b8a6]/15 border border-[#14b8a6]/30 flex items-center justify-center">
             <Zap className="h-4 w-4 text-[#5eead4]" />
           </span>
-          <h2 className="font-headline text-2xl md:text-3xl font-bold text-white">What we do</h2>
+          <h2 className="font-headline text-2xl md:text-3xl font-bold text-white">What your page looks like</h2>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
@@ -175,13 +184,14 @@ export const About = () => (
               Our Vision
             </p>
             <h2 className="font-headline text-2xl md:text-3xl font-bold text-white mt-1">
-              Every discovery more meaningful.
+              One link for everyone.
             </h2>
           </div>
         </div>
         <p className="font-sans text-sm md:text-base leading-8 text-white/70 max-w-3xl">
-          To become a trusted platform for discovering local businesses, services, and
-          experiences — making every search more useful and every discovery more meaningful.
+          To become the go-to platform where every individual, creator, service provider, shop,
+          and business can build a professional online presence — instantly, affordably, and
+          without any technical know-how.
         </p>
       </section>
 
@@ -213,15 +223,15 @@ export const About = () => (
         <div className="relative text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-1.5 bg-white/15 border border-white/25 text-white px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.16em] mb-5 backdrop-blur-sm">
             <HeartHandshake className="w-3 h-3" />
-            Join the Zyphoriz community
+            Join 500+ creators and businesses
           </span>
 
           <h2 className="font-headline text-2xl md:text-4xl font-bold text-white mb-4">
-            Discover what's around you.
+            Ready to go live?
           </h2>
           <p className="font-sans text-sm md:text-base leading-7 text-white/85 mb-8 max-w-xl mx-auto">
-            Whether you're looking for a local business or want to help your business reach more
-            people, Zyphoriz is built to make discovery easier.
+            Create your page and share it with the world today. Get started on Zyphoriz for just
+            ₹499 and be discoverable by thousands of people.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -229,13 +239,13 @@ export const About = () => (
               to="/create"
               className="inline-flex items-center gap-2 bg-white text-[#0f766e] font-sans font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/90 transition-all active:scale-[0.98] shadow-[0_14px_30px_-12px_rgba(0,0,0,0.5)]"
             >
-              List your business <ArrowRight className="h-4 w-4" />
+              Create your page <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/"
               className="inline-flex items-center gap-2 border border-white/50 text-white font-sans font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/10 transition-all"
             >
-              Explore businesses
+              Explore Zyphoriz
             </Link>
           </div>
         </div>

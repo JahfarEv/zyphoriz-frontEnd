@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emailjs/browser": "^5.0.2",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.359.0",
     "qrcode.react": "^4.2.0",

@@ -163,7 +163,6 @@
 //   all in one place.
 // </p>
 
-
 //           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 //             <Link
 //               to="/create"
@@ -190,9 +189,6 @@
 //   <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
 //   Made for individuals, creators, businesses & everyone.
 // </div>
-
-
-
 
 // <div className="flex flex-wrap items-center justify-center gap-8 md:gap-14 mt-12 pt-8 border-t border-white/10">
 //     <div>
@@ -495,8 +491,6 @@
 //   );
 // };
 
-
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -571,7 +565,7 @@ export const Home = () => {
     {
       icon: Image,
       title: "Photo gallery",
-      desc: "Display your shop, products, or work with a clean mobile-friendly gallery.",
+      desc: "Add photos to make your page stand out and build trust with visitors.",
     },
     {
       icon: BadgeCheck,
@@ -850,7 +844,7 @@ export const Home = () => {
               {
                 icon: Image,
                 label: "Gallery",
-                items: ["Shop photos", "Product images", "Work samples"],
+                items: ["Photos", "Visuals", "Highlights"],
               },
               {
                 icon: MessageCircle,

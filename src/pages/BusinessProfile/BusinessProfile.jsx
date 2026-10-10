@@ -91,9 +91,9 @@ export const BusinessProfile = () => {
           reviewCount: 0,
           hours: [],
           services: [],
-          gallery: [],
-          image: null,
-          coverImage: null,
+          gallery: formData.galleryImages || [],
+          image: formData.bannerImage || null,
+          coverImage: formData.bannerImage || null,
           template: formData.template || DEFAULT_TEMPLATE,
         }
       : null;
@@ -235,6 +235,7 @@ export const BusinessProfile = () => {
     telegram,
     youtube,
     logo,
+    profileImage,
     coverImage,
     image,
     ownerReferralCode,
@@ -258,32 +259,68 @@ export const BusinessProfile = () => {
   const hoursList = normaliseHours(openingHours || hours || []);
   const reviewTotal = reviews ?? reviewCount ?? 0;
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const shareImage =
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href.split("?")[0]
+      : `https://zyphoriz.com/${business.slug || slug}`;
+
+  const businessProfileImage =
+    logo ||
+    profileImage ||
+    image ||
+    coverImage ||
+    (Array.isArray(gallery) && gallery[0]) ||
+    (Array.isArray(photos) && photos[0]) ||
+    "";
+
+  const rawBusinessImage =
     coverImage ||
     image ||
-    (typeof window !== "undefined"
-      ? `${window.location.origin}/default-business-image.jpg`
-      : "");
+    businessProfileImage;
+
+  const toAbsoluteUrl = (img) => {
+    if (!img) return "";
+    if (img.startsWith("http://") || img.startsWith("https://")) return img;
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://zyphoriz.com";
+    return `${origin}${img.startsWith("/") ? "" : "/"}${img}`;
+  };
+
+  const shareImage = toAbsoluteUrl(rawBusinessImage || businessProfileImage);
+  const iconImage = toAbsoluteUrl(businessProfileImage);
   const shareTitle = `${name} | Zyphoriz`;
-  const shareDescription = description || `Discover ${name} on Zyphoriz.`;
+  const shareDescription =
+    description ||
+    descriptionSections?.[0]?.description ||
+    `Discover ${name} on Zyphoriz.`;
 
   return (
     <>
       <Helmet>
         <title>{shareTitle}</title>
-        <link rel="icon" href={shareImage} />
         <meta name="description" content={shareDescription} />
+        <link rel="canonical" href={shareUrl} />
+        {iconImage && <link rel="icon" href={iconImage} />}
+
+        {/* Open Graph / Facebook / WhatsApp */}
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Zyphoriz" />
         <meta property="og:title" content={shareTitle} />
         <meta property="og:description" content={shareDescription} />
         <meta property="og:url" content={shareUrl} />
-        <meta property="og:image" content={shareImage} />
+        {shareImage && <meta property="og:image" content={shareImage} />}
+        {shareImage && <meta property="og:image:secure_url" content={shareImage} />}
         <meta property="og:image:alt" content={name} />
+        {shareImage && <meta property="og:image:width" content="1200" />}
+        {shareImage && <meta property="og:image:height" content="630" />}
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={shareTitle} />
         <meta name="twitter:description" content={shareDescription} />
-        <meta name="twitter:image" content={shareImage} />
+        {shareImage && <meta name="twitter:image" content={shareImage} />}
       </Helmet>
 
       {isOwnerView && (

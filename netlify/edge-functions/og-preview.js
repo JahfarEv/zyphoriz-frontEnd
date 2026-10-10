@@ -171,9 +171,8 @@
 
 const API_BASE_URL = 'https://api.zyphoriz.com';
 const SITE_URL = 'https://zyphoriz.com';
-const FALLBACK_IMAGE = `${SITE_URL}/image/Zyphoriz%201.png`;
 const SOCIAL_CRAWLER =
-  /(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Discordbot|Slackbot|SkypeUriPreview|Pinterest|redditbot)/i;
+  /(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Discordbot|Slackbot|Slack-ImgProxy|SkypeUriPreview|Pinterest|redditbot|Applebot|Googlebot|bingbot|vkShare|meta-externalagent|developers\.google\.com\/\+\/web\/snippet)/i;
 
 const escapeHtml = (value) =>
   String(value)
@@ -197,22 +196,19 @@ const firstString = (candidate) => {
 };
 
 /**
- * Never depend on a single field name — the API may return
- * logo / cover / banner / gallery depending on the business.
+ * Pick business profile image (logo / profile image / thumbnail / primary image)
  */
-const pickBusinessImage = (business) => {
+const pickBusinessProfileImage = (business) => {
   const candidates = [
+    business?.profileImage,
+    business?.logo,
     business?.image,
     business?.coverImage,
     business?.bannerImage,
-    business?.cover,
-    business?.banner,
-    business?.profileImage,
-    business?.logo,
     business?.thumbnail,
-    Array.isArray(business?.images) ? business.images[0] : null,
     Array.isArray(business?.gallery) ? business.gallery[0] : null,
-    Array.isArray(business?.media) ? business.media[0] : null,
+    Array.isArray(business?.photos) ? business.photos[0] : null,
+    Array.isArray(business?.images) ? business.images[0] : null,
   ];
 
   for (const candidate of candidates) {
@@ -222,49 +218,69 @@ const pickBusinessImage = (business) => {
   return null;
 };
 
-const getAbsoluteImageUrl = (image) => {
-  const value = firstString(image);
-  if (!value) return FALLBACK_IMAGE;
+/**
+ * Prioritize cover / banner, falling back directly to business profile image
+ */
+const pickBusinessImage = (business) => {
+  const profileImage = pickBusinessProfileImage(business);
+
+  const candidates = [
+    business?.coverImage,
+    business?.bannerImage,
+    business?.image,
+    business?.cover,
+    business?.banner,
+    profileImage, // fallback is business profile image
+    Array.isArray(business?.gallery) ? business.gallery[0] : null,
+    Array.isArray(business?.photos) ? business.photos[0] : null,
+    Array.isArray(business?.images) ? business.images[0] : null,
+  ];
+
+  for (const candidate of candidates) {
+    const value = firstString(candidate);
+    if (value) return value;
+  }
+  return profileImage;
+};
+
+const getAbsoluteImageUrl = (image, fallback = null) => {
+  const value = firstString(image) || firstString(fallback);
+  if (!value) return '';
 
   try {
     const url = new URL(value, SITE_URL);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return FALLBACK_IMAGE;
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
     return url.href;
   } catch {
-    return FALLBACK_IMAGE;
+    return '';
   }
 };
 
 const CLOUDINARY_TRANSFORM = 'c_fill,w_1200,h_630,g_auto,q_auto,f_jpg';
-const ASSET_FILE = /\.(jpe?g|png|webp|gif|avif|bmp|tiff)$/i;
 
-const getSocialImageUrl = (image) => {
-  const absolute = getAbsoluteImageUrl(image);
+const getSocialImageUrl = (image, fallback = null) => {
+  const absolute = getAbsoluteImageUrl(image, fallback);
+  if (!absolute) {
+    return { url: '', dimensions: null };
+  }
 
   let url;
   try {
     url = new URL(absolute);
   } catch {
-    return { url: FALLBACK_IMAGE, dimensions: null };
+    return { url: absolute, dimensions: null };
   }
 
-  if (url.hostname === 'res.cloudinary.com' && url.pathname.includes('/image/upload/')) {
+  // Cloudinary: optimize dimensions for 1200x630 social card without stripping public_id or folders
+  if (url.hostname.includes('cloudinary.com') && url.pathname.includes('/image/upload/')) {
     const marker = '/image/upload/';
     const index = url.pathname.indexOf(marker);
     const prefix = url.pathname.slice(0, index);
-    const rest = url.pathname.slice(index + marker.length);
+    const rest = url.pathname.slice(index + marker.length).replace(/^\/+/, '');
 
-    // Remove any transformation segment already present so we don't stack them
-    // (e.g. /image/upload/w_800/abc.jpg  ->  abc.jpg)
-    const parts = rest.split('/').filter(Boolean);
-    while (parts.length > 1 && !/^v\d+$/.test(parts[0]) && !ASSET_FILE.test(parts[0])) {
-      parts.shift();
+    if (!rest.startsWith(CLOUDINARY_TRANSFORM)) {
+      url.pathname = `${prefix}${marker}${CLOUDINARY_TRANSFORM}/${rest}`;
     }
-
-    url.pathname = `${prefix}${marker}${CLOUDINARY_TRANSFORM}/${parts.join('/')}`;
-
-    // Cache buster — use searchParams so an existing query string is preserved
-    url.searchParams.set('v', '2');
 
     return {
       url: url.href,
@@ -294,21 +310,21 @@ const renderMetadata = ({
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}">
     <link rel="canonical" href="${escapeHtml(url)}">
-    <link rel="icon" href="${escapeHtml(favicon)}">
+    ${favicon ? `<link rel="icon" href="${escapeHtml(favicon)}">` : ''}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Zyphoriz">
     <meta property="og:title" content="${escapeHtml(title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(url)}">
-    <meta property="og:image" content="${escapeHtml(image)}">
+    ${image ? `<meta property="og:image" content="${escapeHtml(image)}">
     <meta property="og:image:secure_url" content="${escapeHtml(image)}">
-    <meta property="og:image:alt" content="${escapeHtml(title)}">
-    ${imageDimensions ? `<meta property="og:image:width" content="${imageDimensions.width}">
+    <meta property="og:image:alt" content="${escapeHtml(title)}">` : ''}
+    ${image && imageDimensions ? `<meta property="og:image:width" content="${imageDimensions.width}">
     <meta property="og:image:height" content="${imageDimensions.height}">` : ''}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
-    <meta name="twitter:image" content="${escapeHtml(image)}">
+    ${image ? `<meta name="twitter:image" content="${escapeHtml(image)}">` : ''}
   </head>
   <body><a href="${escapeHtml(url)}">${escapeHtml(title)}</a></body>
 </html>`;
@@ -324,7 +340,7 @@ export default async (request, context) => {
   const { pathname } = new URL(request.url);
   const slug = pathname.slice(1);
   if (!slug || !/^[a-z0-9-]+$/i.test(slug)) {
-    return new Response('A valid business slug is required.', { status: 400 });
+    return context.next();
   }
 
   let response;
@@ -333,28 +349,23 @@ export default async (request, context) => {
       `${API_BASE_URL}/api/v1/businesses/slug/${encodeURIComponent(slug)}`,
     );
   } catch {
-    return new Response('Unable to load business page metadata.', { status: 502 });
+    return context.next();
   }
 
   if (!response.ok) {
-    return new Response(
-      response.status === 404
-        ? 'Business page not found.'
-        : 'Unable to load business page metadata.',
-      { status: response.status === 404 ? 404 : 502 },
-    );
+    return context.next();
   }
 
   let payload;
   try {
     payload = await response.json();
   } catch {
-    return new Response('Business API returned an invalid response.', { status: 502 });
+    return context.next();
   }
 
   const business = payload?.data?.business;
   if (!payload?.success || !business) {
-    return new Response('Business API returned an invalid response.', { status: 502 });
+    return context.next();
   }
 
   const canonicalUrl = `${SITE_URL}/${encodeURIComponent(business.slug || slug)}`;
@@ -363,17 +374,21 @@ export default async (request, context) => {
     business.descriptionSections?.[0]?.description ||
     `Discover ${business.name} on Zyphoriz.`;
 
-  const rawImage = pickBusinessImage(business);
-  const socialImage = getSocialImageUrl(rawImage);
+  const businessProfileImage = pickBusinessProfileImage(business);
+  const rawImage = pickBusinessImage(business) || businessProfileImage;
+  const socialImage = getSocialImageUrl(rawImage, businessProfileImage);
+  const profileImageUrl = getAbsoluteImageUrl(businessProfileImage || rawImage);
+
+  const previewImage = socialImage.url || profileImageUrl;
 
   return new Response(
     renderMetadata({
       title: `${business.name} | Zyphoriz`,
       description,
       url: canonicalUrl,
-      image: socialImage.url,
+      image: previewImage,
       imageDimensions: socialImage.dimensions,
-      favicon: FALLBACK_IMAGE,
+      favicon: profileImageUrl || previewImage,
     }),
     {
       status: 200,

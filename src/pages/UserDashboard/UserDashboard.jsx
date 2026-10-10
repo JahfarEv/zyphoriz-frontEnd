@@ -365,9 +365,9 @@ export const UserDashboard = () => {
                 className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row gap-5 md:items-center backdrop-blur-md shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] hover:border-[#14b8a6]/40 hover:bg-white/[0.06] transition-all"
               >
                 <div className="w-full md:w-48 aspect-[16/9] rounded-xl overflow-hidden bg-white/[0.05] border border-white/10 flex-shrink-0">
-                  {business.image ? (
+                  {business.image || business.coverImage || (Array.isArray(business.gallery) && business.gallery[0]) ? (
                     <img
-                      src={business.image}
+                      src={business.image || business.coverImage || business.gallery[0]}
                       alt={business.name}
                       className="w-full h-full object-cover"
                     />

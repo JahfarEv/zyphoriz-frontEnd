@@ -104,7 +104,7 @@ export const api = {
     }),
     remove: (id) => request(`/businesses/${id}`, { method: 'DELETE' }),
   },
-  categories: { list: (params = '') => request(`/categories${params}`) },
+  categories: { list: (params = '?limit=200') => request(`/categories${params}`) },
   payments: {
     price: () => request('/payments/price'),
     createOrder: (body) => request('/payments/order', {

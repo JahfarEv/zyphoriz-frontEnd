@@ -1,3 +1,16 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/:slug([a-zA-Z0-9-]+)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Discordbot|Slackbot|SkypeUriPreview|Pinterest|redditbot)"
+        }
+      ],
+      "destination": "/api/og-preview?slug=:slug"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

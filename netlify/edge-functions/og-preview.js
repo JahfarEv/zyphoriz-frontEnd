@@ -202,14 +202,14 @@ const firstString = (candidate) => {
  */
 const pickBusinessImage = (business) => {
   const candidates = [
-    business?.profileImage,
-    business?.logo,
-    business?.thumbnail,
     business?.image,
     business?.coverImage,
     business?.bannerImage,
     business?.cover,
     business?.banner,
+    business?.profileImage,
+    business?.logo,
+    business?.thumbnail,
     Array.isArray(business?.images) ? business.images[0] : null,
     Array.isArray(business?.gallery) ? business.gallery[0] : null,
     Array.isArray(business?.media) ? business.media[0] : null,

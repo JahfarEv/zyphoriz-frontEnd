@@ -284,7 +284,7 @@ export const UserDashboard = () => {
                 {referrals?.referralCode || user?.referralCode}
               </p>
               <p className="font-sans text-xs text-white/80 mt-1">
-                Share it with a new owner. You earn ₹50 after their listing is
+                Share it with a new owner. You earn ₹100 after their listing is
                 created.
               </p>
             </div>

@@ -383,7 +383,7 @@ export default async (request, context) => {
 
   return new Response(
     renderMetadata({
-      title: `${business.name} | Zyphoriz`,
+      title: `${business.name}`,
       description,
       url: canonicalUrl,
       image: previewImage,

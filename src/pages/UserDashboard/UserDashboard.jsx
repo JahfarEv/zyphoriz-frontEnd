@@ -15,6 +15,8 @@ import {
   WalletCards,
   Building2,
   X,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
@@ -41,6 +43,7 @@ export const UserDashboard = () => {
     upiId: "",
   });
   const [submittingRedemption, setSubmittingRedemption] = useState(false);
+  const [payingBusinessId, setPayingBusinessId] = useState(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -54,6 +57,94 @@ export const UserDashboard = () => {
   }, [authLoading]);
 
   const publicUrl = (slug) => `${window.location.origin}/${slug}`;
+
+  const loadRazorpay = () =>
+    new Promise((resolve, reject) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () =>
+        reject(new Error("Unable to load Razorpay Checkout"));
+      document.body.appendChild(script);
+    });
+
+  const handleRetryPayment = async (business) => {
+    const businessId = business._id || business.id;
+    if (!businessId || payingBusinessId) return;
+
+    setPayingBusinessId(businessId);
+    try {
+      await loadRazorpay();
+      const { order, keyId } = await api.payments.createOrder({ businessId });
+      if (!order?.id || !keyId) {
+        throw new Error("Razorpay order was not created");
+      }
+
+      const result = await new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency,
+          name: "Zyphoriz",
+          description: "Standard business listing",
+          order_id: order.id,
+          prefill: {
+            name: business.name,
+            email: business.email,
+            contact: business.phone,
+          },
+          notes: { businessId },
+          theme: { color: "#0f766e" },
+          handler: async (paymentResponse) => {
+            try {
+              resolve(
+                await api.payments.checkout({
+                  businessId,
+                  ...paymentResponse,
+                }),
+              );
+            } catch (error) {
+              reject(error);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Payment was cancelled")),
+          },
+        });
+
+        razorpay.on("payment.failed", (response) => {
+          reject(
+            new Error(
+              response.error?.description || "Payment failed",
+            ),
+          );
+        });
+        razorpay.open();
+      });
+
+      setBusinesses((current) =>
+        current.map((item) =>
+          (item._id || item.id) === businessId
+            ? { ...item, ...(result.business || {}), status: "active" }
+            : item,
+        ),
+      );
+      await showAlert({
+        icon: "success",
+        title: "Payment successful",
+        text: `${business.name} is now publicly available.`,
+      });
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setPayingBusinessId(null);
+    }
+  };
 
   const handleDelete = async (business) => {
     const confirmed = await confirmAction({
@@ -383,8 +474,14 @@ export const UserDashboard = () => {
                     <h2 className="font-headline text-xl font-bold text-white">
                       {business.name}
                     </h2>
-                    <span className="text-xs font-semibold px-2 py-1 rounded-full bg-[#14b8a6]/15 text-[#5eead4] border border-[#14b8a6]/30 capitalize">
-                      {business.status || "active"}
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full border capitalize ${
+                      business.status === "pending_payment"
+                        ? "bg-amber-400/10 text-amber-200 border-amber-400/30"
+                        : "bg-[#14b8a6]/15 text-[#5eead4] border-[#14b8a6]/30"
+                    }`}>
+                      {business.status === "pending_payment"
+                        ? "Payment pending"
+                        : business.status || "active"}
                     </span>
                   </div>
                   <p className="font-sans text-sm text-white/65">
@@ -393,16 +490,35 @@ export const UserDashboard = () => {
                   <p className="font-sans text-xs text-white/45 mt-2 truncate">
                     {publicUrl(business.slug)}
                   </p>
+                  {business.status === "pending_payment" && (
+                    <p className="mt-3 flex items-start gap-2 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-3 py-2 text-xs text-amber-100/90">
+                      <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                      This page is not publicly available because payment is pending. Complete payment to publish it.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Link
-                    to={`/${business.slug}?ownerView=1`}
-                    target="_blank"
-                    className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" /> View my page
-                  </Link>
+                  {business.status === "pending_payment" ? (
+                    <button
+                      onClick={() => handleRetryPayment(business)}
+                      disabled={Boolean(payingBusinessId)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 text-xs font-semibold text-white transition-colors hover:from-[#0d6b64] hover:to-[#0ea5a0] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <CreditCard className="h-3.5 w-3.5" />
+                      {payingBusinessId === (business._id || business.id)
+                        ? "Opening checkout..."
+                        : "Retry payment"}
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/${business.slug}?ownerView=1`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/30 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> View my page
+                    </Link>
+                  )}
 
                   <Link
                     to={`/create?edit=${business.slug}`}
@@ -411,17 +527,19 @@ export const UserDashboard = () => {
                     <Edit3 className="w-3.5 h-3.5" /> Edit
                   </Link>
 
-                  <button
-                    onClick={() => handleShare(business)}
-                    className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-[#14b8a6]/10 hover:border-[#14b8a6]/30 hover:text-[#5eead4] transition-colors"
-                  >
-                    {navigator.share ? (
-                      <Share2 className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}{" "}
-                    Share
-                  </button>
+                  {business.status !== "pending_payment" && (
+                    <button
+                      onClick={() => handleShare(business)}
+                      className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-[#14b8a6]/10 hover:border-[#14b8a6]/30 hover:text-[#5eead4] transition-colors"
+                    >
+                      {navigator.share ? (
+                        <Share2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}{" "}
+                      Share
+                    </button>
+                  )}
 
                   <button
                     onClick={() => handleDelete(business)}

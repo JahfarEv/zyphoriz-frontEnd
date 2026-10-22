@@ -1019,10 +1019,13 @@ import {
   Clock,
   ChevronDown,
   Circle,
+  Printer,
+  Loader2,
 } from "lucide-react";
 import { useRegistration } from "../../context/RegistrationContext";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
+import { showError } from "../../lib/alerts";
 import {
   DEFAULT_TEMPLATE,
   TEMPLATE_OPTIONS,
@@ -1179,6 +1182,12 @@ export const CreateBusiness = () => {
   }));
 
   const [categories, setCategories] = useState([]);
+  const [paymentPrice, setPaymentPrice] = useState(null);
+  const [paymentPriceError, setPaymentPriceError] = useState("");
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const pendingBusinessRef = useRef(null);
   const [businessToEdit, setBusinessToEdit] = useState(null);
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editSlug));
   const [editLoadError, setEditLoadError] = useState("");
@@ -1250,9 +1259,66 @@ export const CreateBusiness = () => {
     };
   }, [editSlug]);
 
+  useEffect(() => {
+    if (editSlug) return undefined;
+
+    let isActive = true;
+    api.payments.price()
+      .then((price) => {
+        const baseAmount = Number(price.baseAmount);
+        const gstAmount = Number(price.gstAmount);
+        const gstRate = Number(price.gstRate);
+        const totalAmount = Number(price.totalAmount ?? price.amount);
+        if (
+          !Number.isFinite(baseAmount) ||
+          !Number.isFinite(gstAmount) ||
+          !Number.isFinite(gstRate) ||
+          !Number.isFinite(totalAmount) ||
+          totalAmount <= 0
+        ) {
+          throw new Error("The listing price is unavailable.");
+        }
+        if (isActive) {
+          setPaymentPrice({
+            baseAmount,
+            gstAmount,
+            gstRate,
+            totalAmount,
+            currency: price.currency || "INR",
+          });
+          setPaymentPriceError("");
+        }
+      })
+      .catch((error) => {
+        if (isActive) {
+          setPaymentPriceError(error.message || "Unable to load the listing price.");
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [editSlug]);
+
   const [errors, setErrors] = useState({});
   const [galleryLimitMessage, setGalleryLimitMessage] = useState("");
   const [slugAvailability, setSlugAvailability] = useState("idle");
+
+  useEffect(() => {
+    if (!termsOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setTermsOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [termsOpen]);
 
   const set = (field) => (e) => {
     const value = e.target.value;
@@ -1330,80 +1396,203 @@ export const CreateBusiness = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (editSlug && !businessToEdit) return;
+    if (!editSlug && !termsAccepted) return;
+    if (!editSlug && !paymentPrice) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: paymentPriceError || "Please wait for the listing price to load before continuing.",
+      }));
+      return;
+    }
     if (!validate()) return;
     const slug = toSlug(form.slug);
-    if (!(editSlug && slug === businessToEdit?.slug)) {
-      try {
+    setIsSubmitting(true);
+    try {
+      if (!(editSlug && slug === businessToEdit?.slug)) {
         const { available } = await api.businesses.checkSlug(slug);
         if (!available) {
           setSlugAvailability("taken");
           setErrors((prev) => ({ ...prev, slug: "This business URL is already in use" }));
           return;
         }
-      } catch {
-        setSlugAvailability("error");
-        setErrors((prev) => ({ ...prev, slug: "Could not check URL availability. Please try again." }));
-        return;
       }
-    }
-    const selectedCat = categories.find((c) => c.id === form.category);
-    if (editSlug && businessToEdit) {
-      const payload = new FormData();
-      const fields = {
-        slug,
-        name: form.name,
-        category: selectedCat?.name || "",
-        categoryId: form.category || "",
-        phone: form.phone,
-        whatsapp: form.whatsapp,
-        email: form.email,
-        website: form.website,
-        address: form.address,
-        city: form.city,
-        location: form.location,
-        description: form.descriptionSections[0].description,
-        descriptionSections: JSON.stringify(form.descriptionSections),
-        instagram: form.instagram,
-        facebook: form.facebook,
-        telegram: form.telegram,
-        youtube: form.youtube,
-        video: form.video,
-        gallery: JSON.stringify(
-          form.galleryImages.filter((image) => !image.startsWith("blob:")),
-        ),
-        additionalPhones: JSON.stringify(
-          form.additionalPhones.filter((phone) => phone.trim()),
-        ),
-        template: form.template || DEFAULT_TEMPLATE,
-        openingHours: JSON.stringify(form.openingHours),
-      };
-      Object.entries(fields).forEach(([key, value]) =>
-        payload.append(key, value || ""),
-      );
-      if (form.bannerFile) payload.append("banner", form.bannerFile);
-      (form.galleryFiles || []).forEach((file) =>
-        payload.append("gallery", file),
-      );
-      try {
+
+      const selectedCat = categories.find((c) => c.id === form.category);
+      if (editSlug && businessToEdit) {
+        const payload = new FormData();
+        const fields = {
+          slug,
+          name: form.name,
+          category: selectedCat?.name || "",
+          categoryId: form.category || "",
+          phone: form.phone,
+          whatsapp: form.whatsapp,
+          email: form.email,
+          website: form.website,
+          address: form.address,
+          city: form.city,
+          location: form.location,
+          description: form.descriptionSections[0].description,
+          descriptionSections: JSON.stringify(form.descriptionSections),
+          instagram: form.instagram,
+          facebook: form.facebook,
+          telegram: form.telegram,
+          youtube: form.youtube,
+          video: form.video,
+          gallery: JSON.stringify(
+            form.galleryImages.filter((image) => !image.startsWith("blob:")),
+          ),
+          additionalPhones: JSON.stringify(
+            form.additionalPhones.filter((phone) => phone.trim()),
+          ),
+          template: form.template || DEFAULT_TEMPLATE,
+          openingHours: JSON.stringify(form.openingHours),
+        };
+        Object.entries(fields).forEach(([key, value]) =>
+          payload.append(key, value || ""),
+        );
+        if (form.bannerFile) payload.append("banner", form.bannerFile);
+        (form.galleryFiles || []).forEach((file) =>
+          payload.append("gallery", file),
+        );
         await api.businesses.update(businessToEdit._id, payload);
         navigate("/dashboard");
-      } catch (error) {
-        setErrors({ submit: error.message });
+        return;
       }
-      return;
+
+      updateFormData({
+        ...form,
+        description: form.descriptionSections[0].description,
+        slug,
+        categoryName: selectedCat?.name || "",
+        selectedPlan: "standard",
+        planPrice: "₹500/yr",
+        template: form.template || DEFAULT_TEMPLATE,
+      });
+
+      if (!window.Razorpay) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Unable to load secure payment checkout."));
+          document.body.appendChild(script);
+        });
+      }
+
+      let business = pendingBusinessRef.current;
+      if (!business) {
+        const payload = new FormData();
+        const businessFields = {
+          slug,
+          referralCode: form.referralCode || "",
+          name: form.name,
+          category: selectedCat?.name || "",
+          categoryId: form.category || "",
+          phone: form.phone,
+          whatsapp: form.whatsapp,
+          email: form.email,
+          website: form.website,
+          instagram: form.instagram,
+          facebook: form.facebook,
+          telegram: form.telegram,
+          youtube: form.youtube,
+          video: form.video,
+          address: form.address,
+          city: form.city,
+          location: form.address
+            ? `${form.address}, ${form.city}`
+            : form.city,
+          description: form.descriptionSections[0].description,
+          descriptionSections: form.descriptionSections,
+          additionalPhones: form.additionalPhones.filter((phone) => phone.trim()),
+          template: form.template || DEFAULT_TEMPLATE,
+          openingHours: form.openingHours,
+          image:
+            typeof form.bannerImage === "string" &&
+            !form.bannerImage.startsWith("blob:")
+              ? form.bannerImage
+              : "",
+        };
+        Object.entries(businessFields).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            payload.append(
+              key,
+              Array.isArray(value) ? JSON.stringify(value) : value,
+            );
+          }
+        });
+        if (form.bannerFile) payload.append("banner", form.bannerFile);
+        (form.galleryFiles || []).forEach((file) => payload.append("gallery", file));
+
+        ({ business } = await api.businesses.create(payload));
+        pendingBusinessRef.current = business;
+      }
+
+      if (!business?._id) {
+        throw new Error("Business was not created.");
+      }
+
+      const { order, keyId } = await api.payments.createOrder({
+        businessId: business._id,
+      });
+      if (!order?.id || !keyId || !window.Razorpay) {
+        throw new Error("Unable to prepare secure payment checkout.");
+      }
+
+      const paymentResult = await new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency,
+          name: "Zyphoriz",
+          description: "Standard business listing",
+          order_id: order.id,
+          prefill: {
+            name: business.name,
+            email: business.email,
+            contact: business.phone,
+          },
+          notes: { businessId: business._id },
+          theme: { color: "#0f766e" },
+          handler: async (paymentResponse) => {
+            try {
+              const result = await api.payments.checkout({
+                businessId: business._id,
+                ...paymentResponse,
+              });
+              resolve(result);
+            } catch (error) {
+              reject(error);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Payment was cancelled.")),
+          },
+        });
+        razorpay.on("payment.failed", (response) => {
+          reject(new Error(response.error?.description || "Payment failed."));
+        });
+        razorpay.open();
+      });
+
+      navigate("/payment/success", {
+        state: {
+          ...paymentResult,
+          businessId: business._id,
+          business: paymentResult.business || business,
+        },
+      });
+    } catch (error) {
+      console.error("Business submission or payment failed:", error);
+      const message = error.message || "Unable to create the business listing or start payment.";
+      setErrors((prev) => ({ ...prev, submit: message }));
+      showError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-    updateFormData({
-      ...form,
-      description: form.descriptionSections[0].description,
-      slug,
-      categoryName: selectedCat?.name || "",
-      selectedPlan: "standard",
-      planPrice: "₹499/yr",
-      template: form.template || DEFAULT_TEMPLATE,
-    });
-    // This goes to payment checkout since it's the CreateBusiness flow
-    navigate("/payment/checkout");
   };
 
   const handleBannerChange = (e) => {
@@ -2219,18 +2408,94 @@ export const CreateBusiness = () => {
                     {errors.submit}
                   </p>
                 )}
+                {!editSlug && (
+                  <>
+                    <div className="mb-4 rounded-xl border border-outline-variant/40 bg-background p-4">
+                      <h2 className="font-sans text-sm font-bold text-on-surface">
+                        Listing fee
+                      </h2>
+                      {paymentPrice ? (
+                        <div className="mt-2 space-y-1.5 font-sans text-sm text-on-surface-variant">
+                          <div className="flex justify-between gap-4">
+                            <span>Listing fee</span>
+                            <span>
+                              {new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: paymentPrice.currency,
+                              }).format(paymentPrice.baseAmount)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span>GST ({paymentPrice.gstRate}%)</span>
+                            <span>
+                              {new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: paymentPrice.currency,
+                              }).format(paymentPrice.gstAmount)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-4 border-t border-outline-variant/40 pt-2 font-bold text-on-surface">
+                            <span>Total due today</span>
+                            <span>
+                              {new Intl.NumberFormat("en-IN", {
+                                style: "currency",
+                                currency: paymentPrice.currency,
+                              }).format(paymentPrice.totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="mt-2 font-sans text-xs text-on-surface-variant" role={paymentPriceError ? "alert" : undefined}>
+                          {paymentPriceError || "Loading current listing fee…"}
+                        </p>
+                      )}
+                    </div>
+                    <label className="mb-4 flex items-start gap-2.5 font-sans text-xs leading-relaxed text-on-surface-variant">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={termsAccepted}
+                        onChange={(event) => setTermsAccepted(event.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-secondary"
+                      />
+                      <span>
+                        I agree to the{" "}
+                        <button
+                          type="button"
+                          onClick={() => setTermsOpen(true)}
+                          className="font-semibold text-secondary underline"
+                        >
+                          Terms and Conditions
+                        </button>
+                        , including the refund policy, and understand the listing fee and GST shown above.
+                      </span>
+                    </label>
+                  </>
+                )}
                 <button
                   type="submit"
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-4 font-sans text-base font-bold text-on-secondary shadow-lg shadow-secondary/25 transition-all hover:bg-secondary/90 hover:shadow-xl active:scale-[0.99]"
+                  disabled={isSubmitting || (!editSlug && (!paymentPrice || !termsAccepted))}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-4 font-sans text-base font-bold text-on-secondary shadow-lg shadow-secondary/25 transition-all hover:bg-secondary/90 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
                 >
-                  {editSlug ? "Save changes" : "Continue"}
-                  {!editSlug && (
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {editSlug ? "Saving changes..." : "Preparing secure payment..."}
+                    </>
+                  ) : (
+                    <>
+                      {editSlug ? "Save changes" : "Continue"}
+                      {!editSlug && (
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      )}
+                    </>
                   )}
                 </button>
-                {/* <p className="mt-3 text-center font-sans text-xs text-outline">
-                  🔒 Secure payment · ₹499 one-time per year · No hidden charges
-                </p> */}
+                {!editSlug && (
+                  <p className="mt-3 text-center font-sans text-xs text-outline">
+                    Secure payment · Price shown includes GST · Valid for one year
+                  </p>
+                )}
               </div>
             </div>
 
@@ -2342,6 +2607,157 @@ export const CreateBusiness = () => {
             </aside>
           </div>
         </form>
+
+        {termsOpen && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-6 print:static print:block print:bg-white print:p-0 print:backdrop-blur-none"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setTermsOpen(false);
+            }}
+          >
+            <style>{`
+              @media print {
+                body * { visibility: hidden !important; }
+                #business-terms-document,
+                #business-terms-document * { visibility: visible !important; }
+                #business-terms-document {
+                  position: absolute !important;
+                  inset: 0 auto auto 0 !important;
+                  width: 100% !important;
+                  max-height: none !important;
+                  overflow: visible !important;
+                  border: 0 !important;
+                  border-radius: 0 !important;
+                  box-shadow: none !important;
+                  color: #111 !important;
+                  background: #fff !important;
+                }
+              }
+            `}</style>
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="business-terms-title"
+              tabIndex={-1}
+              className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-[#e8e6e1] shadow-2xl print:static print:max-h-none print:max-w-none print:overflow-visible print:rounded-none print:shadow-none"
+            >
+              <header className="flex items-center justify-between gap-4 border-b border-black/10 bg-white px-5 py-4 print:hidden sm:px-7">
+                <div>
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-secondary">
+                    Zyphoriz · Business listing
+                  </p>
+                  <h2
+                    id="business-terms-title"
+                    className="mt-1 font-headline text-xl font-bold text-on-surface"
+                  >
+                    Terms and Conditions
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-outline-variant px-3 py-2 font-sans text-xs font-semibold text-on-surface transition hover:bg-surface-container"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print / Save as PDF
+                </button>
+              </header>
+
+              <article
+                id="business-terms-document"
+                className="mx-auto w-full max-w-[760px] flex-1 overflow-y-auto bg-white px-7 py-8 text-[#242424] shadow-inner sm:px-12 sm:py-10 print:max-w-none print:overflow-visible print:px-12 print:py-10 print:shadow-none"
+              >
+                <div className="border-b border-black/15 pb-5">
+                  <p className="font-sans text-xs font-semibold uppercase tracking-widest text-[#0f766e]">
+                    Zyphoriz
+                  </p>
+                  <h1 className="mt-2 font-headline text-2xl font-bold">
+                    Business Listing Terms and Conditions
+                  </h1>
+                  <p className="mt-2 font-sans text-xs text-black/60">
+                    Please read these terms before submitting your listing.
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-6 font-sans text-sm leading-7">
+                 
+<section>
+  <h3 className="font-bold">1. Listing service and validity</h3>
+  <p className="mt-1">
+    The business listing service provides a business profile and custom page URL
+    on Zyphoriz. The plan is valid for one year (12 months) from the date of
+    successful payment and activation. After the one-year validity period expires,
+    the listing must be renewed by purchasing the applicable renewal plan to
+    continue using the service. If the plan is not renewed, Zyphoriz may deactivate
+    or remove the business listing and its custom URL.
+  </p>
+</section>
+
+                  <section>
+                    <h3 className="font-bold">2. Accurate information and content</h3>
+                    <p className="mt-1">
+                      You confirm that you are authorized to create this listing and that the business information, images, and other content you submit are accurate, lawful, and do not violate another person’s rights. You are responsible for keeping your listing information current.
+                    </p>
+                  </section>
+               
+<section>
+  <h3 className="font-bold">3. Fees and payment</h3>
+  <p className="mt-1">
+    The one-year business listing fee is ₹590, inclusive of all applicable GST. 
+    The total amount payable is ₹590, with no additional GST charged at checkout. 
+    Payment is processed securely by the payment provider. The listing will be 
+    activated after successful payment verification.
+  </p>
+</section>
+
+<section>
+  <h3 className="font-bold">4. Refund and cancellation policy</h3>
+  <p className="mt-1">
+    Payments are generally non-refundable once successfully processed and the 
+    digital business profile and custom URL have been generated. Refunds are 
+    not provided for a change of mind, accidental purchase, or dissatisfaction 
+    with content submitted by you.
+  </p>
+
+<p className="mt-2">
+  If a server error, website malfunction, or payment processing issue results
+  in the same transaction being charged more than once, the user must contact
+  Zyphoriz support and submit a refund claim within 7 days of the transaction
+  date, along with the relevant transaction details and payment proof. After
+  the claim is received, we will verify the duplicate payment and, if confirmed,
+  arrange a refund of the duplicate amount through the appropriate payment
+  channel.
+</p>
+
+  <p className="mt-2">
+    If payment is successfully deducted but a technical issue prevents the 
+    business profile or custom URL from being created, contact support with 
+    your transaction details. After verification, we will resolve the issue 
+    by activating the listing or processing an appropriate refund.
+  </p>
+</section>
+
+                  <section>
+                    <h3 className="font-bold">5. Listing review and availability</h3>
+                    <p className="mt-1">
+                      Zyphoriz may reject or remove a listing or content that is unlawful, misleading, infringing, or otherwise violates these terms. We aim to keep the platform available but do not guarantee uninterrupted or error-free service.
+                    </p>
+                  </section>
+                </div>
+              </article>
+
+              <footer className="flex justify-end border-t border-black/10 bg-white px-5 py-3 print:hidden sm:px-7">
+                <button
+                  type="button"
+                  onClick={() => setTermsOpen(false)}
+                  className="rounded-lg bg-secondary px-5 py-2.5 font-sans text-sm font-bold text-on-secondary transition hover:bg-secondary/90"
+                >
+                  Close
+                </button>
+              </footer>
+            </section>
+          </div>
+        )}
       </main>
     </div>
   );

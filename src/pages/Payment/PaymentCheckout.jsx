@@ -266,8 +266,8 @@
 // };
 
 
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Store,
   MapPin,
@@ -282,6 +282,8 @@ import { showError } from '../../lib/alerts';
 
 export const PaymentCheckout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const shouldAutoLaunch = location.state?.launchPayment === true;
 
   const { formData } = useRegistration();
 
@@ -292,6 +294,8 @@ export const PaymentCheckout = () => {
   const [priceGstRate, setPriceGstRate] = useState(null);
   const [priceCurrency, setPriceCurrency] = useState('INR');
   const [priceError, setPriceError] = useState('');
+  const pendingBusinessRef = useRef(null);
+  const autoLaunchStartedRef = useRef(false);
 
   useEffect(() => {
     let isActive = true;
@@ -512,11 +516,11 @@ export const PaymentCheckout = () => {
         }
       );
 
-      const {
-        business,
-      } = await api.businesses.create(
-        payload
-      );
+      let business = pendingBusinessRef.current;
+      if (!business) {
+        ({ business } = await api.businesses.create(payload));
+        pendingBusinessRef.current = business;
+      }
 
       if (!business?._id) {
         throw new Error(
@@ -620,6 +624,20 @@ export const PaymentCheckout = () => {
       setPaying(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      autoLaunchStartedRef.current ||
+      !shouldAutoLaunch ||
+      !formData.name ||
+      !formData.bannerImage
+    ) {
+      return;
+    }
+
+    autoLaunchStartedRef.current = true;
+    void handlePay({ preventDefault: () => {} });
+  }, [formData, shouldAutoLaunch]);
 
   return (
     <main className="w-full min-h-screen bg-[#16292C] px-4 md:px-6 py-8 relative overflow-hidden">

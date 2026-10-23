@@ -552,11 +552,7 @@ export const Home = () => {
       title: "Call, WhatsApp & directions",
       desc: "One-tap buttons so customers can call you, message you on WhatsApp, or get directions instantly.",
     },
-    // {
-    //   icon: QrCode,
-    //   title: "QR code for your shop",
-    //   desc: "Print it on your counter, visiting card, packaging, or window. Customers scan and reach you.",
-    // },
+  
     {
       icon: MapPin,
       title: "Address & hours",
@@ -637,105 +633,91 @@ export const Home = () => {
   return (
     <div className="w-full min-h-screen bg-[#16292C] text-white">
       {/* HERO */}
-      <section className="relative pt-14 pb-20 px-4 md:px-8 overflow-hidden">
+      <section className="relative pt-16 pb-20 px-4 md:px-8 overflow-hidden">
+  {/* Background patterns */}
+  <div
+    className="absolute inset-0 opacity-[0.14]"
+    style={{
+      backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
+      backgroundSize: "22px 22px",
+    }}
+  />
+  <div className="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_50%_20%,rgba(20,184,166,0.18),transparent_55%)]" />
+
+  {/* Reduced max-width from 4xl to 3xl for better readability */}
+  <div className="max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center">
+    
+    {/* Badge */}
+    <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-8 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
+      <Sparkles className="w-4 h-4" />
+      Your Space. Your Identity. Your Link.
+    </div>
+
+    {/* Headline - Tightened leading and margin */}
+    <h1 className="font-headline text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-[1.1] tracking-tight">
+      Everything about you,
+      <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent mt-2">
+        All in One Link.
+      </span>
+    </h1>
+
+    {/* Subtext - Narrowed, increased line-height, lighter color for contrast */}
+    <p className="font-sans text-base md:text-lg text-white/70 mb-8 max-w-xl mx-auto leading-relaxed">
+      Create your own stunning digital page in minutes. Showcase who you
+      are, what you do, your work, services, photos and contact details —
+      all in one place.
+    </p>
+
+    {/* CTAs */}
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-10">
+      <Link
+        to="/create"
+        className="inline-flex items-center justify-center gap-2 text-white font-sans font-bold px-8 py-3.5 rounded-xl transition-all duration-200 text-base w-full sm:w-auto
+                   bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
+                   hover:from-[#0d6b64] hover:to-[#0ea5a0]
+                   shadow-[0_18px_40px_-14px_rgba(20,184,166,0.7)]
+                   active:scale-[0.98]"
+      >
+        <PlusCircle className="w-5 h-5" />
+        Create your page
+        <ArrowRight className="w-5 h-5" />
+      </Link>
+
+      <a
+        href="#how-it-works"
+        className="inline-flex items-center justify-center gap-2 text-white/80 font-sans font-semibold px-6 py-3.5 rounded-xl border border-white/15 hover:bg-white/[0.06] transition-all w-full sm:w-auto"
+      >
+        See how it works
+      </a>
+    </div>
+
+    {/* Trust line */}
+    <div className="flex items-center justify-center gap-2 text-sm text-white/50">
+      <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
+      Made for individuals, creators, businesses & everyone.
+    </div>
+
+    {/* Stats strip */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16 pt-8 border-t border-white/10 w-full max-w-2xl">
+      {[
+        { value: "One Link", label: "Everything in one place", color: "text-[#5eead4]" },
+        { value: "No Code", label: "Easy page builder", color: "text-[#E8A23D]" },
+        { value: "24/7", label: "Your online presence", color: "text-[#5eead4]" },
+      ].map(({ value, label, color }) => (
         <div
-          className="absolute inset-0 opacity-[0.14]"
-          style={{
-            backgroundImage: `radial-gradient(${AMBER} 1.5px, transparent 1.5px)`,
-            backgroundSize: "22px 22px",
-          }}
-        />
-        <div className="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_50%_20%,rgba(20,184,166,0.18),transparent_55%)]" />
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#E8A23D] text-[#16292C] px-4 py-2 rounded-full text-sm font-bold mb-6 shadow-[0_10px_30px_-10px_rgba(232,162,61,0.6)]">
-            <Sparkles className="w-4 h-4" />
-            Your Space. Your Identity. Your Link.
-          </div>
-
-          <h1 className="font-headline text-4xl md:text-7xl font-extrabold text-white mb-4 leading-tight">
-            Everything about you,
-            <span className="block bg-gradient-to-r from-[#5eead4] to-[#E8A23D] bg-clip-text text-transparent">
-              All in One Link.
-            </span>
-          </h1>
-
-          <div className="w-16 h-1 bg-[#E8A23D] mx-auto mb-8 rounded-full" />
-
-          <p className="font-sans text-lg md:text-xl text-white/75 mb-5 max-w-2xl mx-auto leading-relaxed">
-            Create your own stunning digital page in minutes. Showcase who you
-            are, what you do, your work, services, photos and contact details —
-            all in one place.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/create"
-              className="inline-flex items-center gap-2 text-white font-sans font-bold px-8 py-4 rounded-2xl transition-all duration-200 text-base
-                         bg-gradient-to-r from-[#0f766e] to-[#14b8a6]
-                         hover:from-[#0d6b64] hover:to-[#0ea5a0]
-                         shadow-[0_18px_40px_-14px_rgba(20,184,166,0.7)]
-                         active:scale-[0.98]"
-            >
-              <PlusCircle className="w-5 h-5" />
-              Create your page
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-
-            <a
-              href="#how-it-works"
-              className="inline-flex items-center gap-2 text-white/80 font-sans font-semibold px-6 py-4 rounded-2xl border border-white/15 hover:bg-white/[0.06] transition-all"
-            >
-              See how it works
-            </a>
-          </div>
-
-          {/* BUSINESS & PRODUCTS LISTING CTA */}
-          {/* <div className="mt-6">
-            <a
-              href={PLAY_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[#16292C] font-sans font-bold px-6 py-3.5 rounded-2xl transition-all duration-200
-                         bg-[#E8A23D] hover:bg-[#f0b155]
-                         shadow-[0_18px_40px_-16px_rgba(232,162,61,0.8)]
-                         active:scale-[0.98]"
-            >
-              <Store className="w-5 h-5" />
-              Your business & products listing
-              <ArrowRight className="w-4 h-4" />
-            </a>
-          </div> */}
-
-          <div className="flex items-center justify-center gap-2 mt-8 text-sm text-white/60">
-            <ShieldCheck className="w-4 h-4 text-[#5eead4]" />
-            Made for individuals, creators, businesses & everyone.
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-14 mt-12 pt-8 border-t border-white/10">
-            <div>
-              <div className="text-2xl font-bold text-[#5eead4]">One Link</div>
-              <div className="text-sm text-white/60 mt-1">
-                Everything in one place
-              </div>
-            </div>
-
-            <div>
-              <div className="text-2xl font-bold text-[#E8A23D]">No Code</div>
-              <div className="text-sm text-white/60 mt-1">
-                Easy page builder
-              </div>
-            </div>
-
-            <div>
-              <div className="text-2xl font-bold text-[#5eead4]">24/7</div>
-              <div className="text-sm text-white/60 mt-1">
-                Your online presence
-              </div>
-            </div>
+          key={value}
+          className="flex flex-col items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 px-4 py-5"
+        >
+          <div className={`text-xl font-bold ${color}`}>{value}</div>
+          <div className="text-sm text-white/50 mt-1 text-center leading-snug">
+            {label}
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+    
+  </div>
+</section>
 
       {/* HOW IT WORKS */}
       <section
@@ -922,46 +904,7 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      {/* <section className="relative py-16 px-4 md:px-8 border-t border-white/10">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-3">
-              Loved by local business owners
-            </h2>
-            <p className="font-sans text-white/60 max-w-2xl mx-auto">
-              Here is what early users are saying about their experience.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((item) => (
-              <div
-                key={item.name}
-                className="bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/10 p-6"
-              >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 text-[#E8A23D] fill-current"
-                    />
-                  ))}
-                </div>
-                <p className="font-sans text-sm text-white/70 leading-relaxed mb-6">
-                  &ldquo;{item.text}&rdquo;
-                </p>
-                <div>
-                  <p className="font-sans text-sm font-bold text-white">
-                    {item.name}
-                  </p>
-                  <p className="font-sans text-xs text-white/50">{item.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
+   
 
       {/* FAQ */}
       <section className="relative py-16 px-4 md:px-8 border-t border-white/10">

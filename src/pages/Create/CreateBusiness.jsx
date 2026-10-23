@@ -1053,12 +1053,12 @@ const isValidPhone = (phone) => {
 };
 
 const defaultOpeningHours = [
-  { day: "Monday", open: true, from: "09:00", to: "18:00" },
-  { day: "Tuesday", open: true, from: "09:00", to: "18:00" },
-  { day: "Wednesday", open: true, from: "09:00", to: "18:00" },
-  { day: "Thursday", open: true, from: "09:00", to: "18:00" },
-  { day: "Friday", open: true, from: "09:00", to: "18:00" },
-  { day: "Saturday", open: true, from: "09:00", to: "18:00" },
+  { day: "Monday", open: false, from: "09:00", to: "18:00" },
+  { day: "Tuesday", open: false, from: "09:00", to: "18:00" },
+  { day: "Wednesday", open: false, from: "09:00", to: "18:00" },
+  { day: "Thursday", open: false, from: "09:00", to: "18:00" },
+  { day: "Friday", open: false, from: "09:00", to: "18:00" },
+  { day: "Saturday", open: false, from: "09:00", to: "18:00" },
   { day: "Sunday", open: false, from: "09:00", to: "18:00" },
 ];
 
@@ -2188,25 +2188,25 @@ export const CreateBusiness = () => {
               <Section
                 icon={Clock}
                 title="Opening hours"
-                description="Toggle a day off if you're closed."
+                description="Choose the days you’re open, then set your opening and closing times."
               >
                 <div className="overflow-hidden rounded-xl border border-outline-variant/40">
                   <div className="hidden grid-cols-[140px_1fr_1fr_auto] gap-x-3 bg-surface-container px-4 py-2.5 sm:grid">
                     <span className={LABEL}>Day</span>
                     <span className={LABEL}>Opens at</span>
                     <span className={LABEL}>Closes at</span>
-                    <span className={LABEL}>Open</span>
+                    <span className={`${LABEL} text-center`}>Status</span>
                   </div>
 
                   {form.openingHours.map((row, idx) => (
                     <div
                       key={row.day}
-                      className={`grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 border-t border-outline-variant/20 px-4 py-2.5 transition-colors first:border-t-0 sm:grid-cols-[140px_1fr_1fr_auto] sm:first:border-t ${
+                      className={`grid grid-cols-2 gap-x-3 gap-y-3 border-t border-outline-variant/20 px-3 py-3 transition-colors first:border-t-0 sm:grid-cols-[140px_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-x-3 sm:gap-y-0 sm:px-4 sm:py-2.5 sm:first:border-t ${
                         row.open ? "bg-transparent" : "bg-surface-container/40"
                       }`}
                     >
                       <span
-                        className={`font-sans text-sm font-semibold ${
+                        className={`order-1 self-center font-sans text-sm font-semibold ${
                           row.open
                             ? "text-on-surface"
                             : "text-on-surface-variant"
@@ -2214,34 +2214,49 @@ export const CreateBusiness = () => {
                       >
                         {row.day}
                       </span>
-                      <input
-                        type="time"
-                        disabled={!row.open}
-                        value={row.from}
-                        onChange={(e) => updateHour(idx, "from", e.target.value)}
-                        className="w-full rounded-lg border border-outline-variant bg-surface-container px-2 py-1.5 font-sans text-sm text-on-surface transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/15 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                      <input
-                        type="time"
-                        disabled={!row.open}
-                        value={row.to}
-                        onChange={(e) => updateHour(idx, "to", e.target.value)}
-                        className="w-full rounded-lg border border-outline-variant bg-surface-container px-2 py-1.5 font-sans text-sm text-on-surface transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/15 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => updateHour(idx, "open", !row.open)}
-                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary/40 ${
-                          row.open ? "bg-secondary" : "bg-outline-variant"
-                        }`}
-                        aria-label={`Toggle ${row.day}`}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${
-                            row.open ? "translate-x-5" : "translate-x-0"
-                          }`}
+                      <div className="order-2 flex items-center justify-end sm:order-4 sm:justify-center">
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={row.open}
+                          onClick={() => updateHour(idx, "open", !row.open)}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-1 font-sans text-xs font-semibold text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 sm:min-h-0 sm:px-0"
+                          aria-label={`${row.open ? "Close" : "Open"} ${row.day}`}
+                        >
+                          <span
+                            className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${
+                              row.open ? "bg-secondary" : "bg-outline-variant"
+                            }`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${
+                                row.open ? "translate-x-5" : "translate-x-0"
+                              }`}
+                            />
+                          </span>
+                          <span className="sm:hidden">{row.open ? "Open" : "Off"}</span>
+                        </button>
+                      </div>
+                      <label className="order-3 block min-w-0 font-sans text-xs text-on-surface-variant sm:order-2 sm:text-inherit">
+                        <span className="mb-1 block sm:hidden">Opens at</span>
+                        <input
+                          type="time"
+                          disabled={!row.open}
+                          value={row.from}
+                          onChange={(e) => updateHour(idx, "from", e.target.value)}
+                          className="w-full min-w-0 rounded-lg border border-outline-variant bg-surface-container px-2 py-2 font-sans text-sm text-on-surface transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/15 disabled:cursor-not-allowed disabled:opacity-50 sm:py-1.5"
                         />
-                      </button>
+                      </label>
+                      <label className="order-4 block min-w-0 font-sans text-xs text-on-surface-variant sm:order-3 sm:text-inherit">
+                        <span className="mb-1 block sm:hidden">Closes at</span>
+                        <input
+                          type="time"
+                          disabled={!row.open}
+                          value={row.to}
+                          onChange={(e) => updateHour(idx, "to", e.target.value)}
+                          className="w-full min-w-0 rounded-lg border border-outline-variant bg-surface-container px-2 py-2 font-sans text-sm text-on-surface transition-colors focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/15 disabled:cursor-not-allowed disabled:opacity-50 sm:py-1.5"
+                        />
+                      </label>
                     </div>
                   ))}
                 </div>
@@ -2410,46 +2425,6 @@ export const CreateBusiness = () => {
                 )}
                 {!editSlug && (
                   <>
-                    <div className="mb-4 rounded-xl border border-outline-variant/40 bg-background p-4">
-                      <h2 className="font-sans text-sm font-bold text-on-surface">
-                        Listing fee
-                      </h2>
-                      {paymentPrice ? (
-                        <div className="mt-2 space-y-1.5 font-sans text-sm text-on-surface-variant">
-                          <div className="flex justify-between gap-4">
-                            <span>Listing fee</span>
-                            <span>
-                              {new Intl.NumberFormat("en-IN", {
-                                style: "currency",
-                                currency: paymentPrice.currency,
-                              }).format(paymentPrice.baseAmount)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between gap-4">
-                            <span>GST ({paymentPrice.gstRate}%)</span>
-                            <span>
-                              {new Intl.NumberFormat("en-IN", {
-                                style: "currency",
-                                currency: paymentPrice.currency,
-                              }).format(paymentPrice.gstAmount)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between gap-4 border-t border-outline-variant/40 pt-2 font-bold text-on-surface">
-                            <span>Total due today</span>
-                            <span>
-                              {new Intl.NumberFormat("en-IN", {
-                                style: "currency",
-                                currency: paymentPrice.currency,
-                              }).format(paymentPrice.totalAmount)}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="mt-2 font-sans text-xs text-on-surface-variant" role={paymentPriceError ? "alert" : undefined}>
-                          {paymentPriceError || "Loading current listing fee…"}
-                        </p>
-                      )}
-                    </div>
                     <label className="mb-4 flex items-start gap-2.5 font-sans text-xs leading-relaxed text-on-surface-variant">
                       <input
                         type="checkbox"
@@ -2467,7 +2442,7 @@ export const CreateBusiness = () => {
                         >
                           Terms and Conditions
                         </button>
-                        , including the refund policy, and understand the listing fee and GST shown above.
+                        , including the refund policy, and understand the listing price shown below.
                       </span>
                     </label>
                   </>
@@ -2493,7 +2468,14 @@ export const CreateBusiness = () => {
                 </button>
                 {!editSlug && (
                   <p className="mt-3 text-center font-sans text-xs text-outline">
-                    Secure payment · Price shown includes GST · Valid for one year
+                    {paymentPrice
+                      ? `Secure payment · ${new Intl.NumberFormat("en-IN", {
+                          style: "currency",
+                          currency: paymentPrice.currency,
+                        }).format(paymentPrice.totalAmount)} including GST · Valid for one year`
+                      : paymentPriceError
+                        ? paymentPriceError
+                        : "Loading price…"}
                   </p>
                 )}
               </div>

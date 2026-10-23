@@ -47,12 +47,16 @@ const normaliseHours = (hours) => {
   if (!Array.isArray(hours)) return [];
   return hours
     .map((h) => {
-      if (h.time) return { day: h.day, time: h.time };
-      if (!h.open) return { day: h.day, time: "Closed" };
+      if (h.open === false) return null;
+      if (h.time) {
+        return String(h.time).trim().toLowerCase() === "closed"
+          ? null
+          : { day: h.day, time: h.time };
+      }
       if (h.from && h.to) return { day: h.day, time: `${h.from} – ${h.to}` };
-      return { day: h.day, time: "" };
+      return null;
     })
-    .filter((h) => h.time);
+    .filter((h) => h?.time);
 };
 
 export const BusinessProfile = () => {
@@ -256,7 +260,9 @@ export const BusinessProfile = () => {
     : "";
 
   const allPhotos = (gallery.length > 0 ? gallery : photos).slice(0, 6);
-  const hoursList = normaliseHours(openingHours || hours || []);
+  const hoursList = normaliseHours(
+    (openingHours?.length ? openingHours : hours) || [],
+  );
   const reviewTotal = reviews ?? reviewCount ?? 0;
 
   const shareUrl =
@@ -911,7 +917,7 @@ export const BusinessProfile = () => {
               {/* Opening Hours */}
               {hoursList.length > 0 && (
                 <div
-                  className="min-h-[340px] rounded-2xl p-6 shadow-sm border"
+                  className="rounded-2xl p-5 shadow-sm border sm:p-6"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.04)",
                     borderColor: `${theme.accent}33`,
@@ -1003,7 +1009,7 @@ export const BusinessProfile = () => {
     className="inline-flex items-center justify-center bg-white font-sans font-bold px-5 py-2 rounded-xl hover:bg-white/90 transition-all text-xs relative z-10"
     style={{ color: theme.deep }}
   >
-    Create My Page
+    Create Your Page
   </Link>
 </div>
             </div>

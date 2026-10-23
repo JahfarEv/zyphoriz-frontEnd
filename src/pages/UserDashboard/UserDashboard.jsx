@@ -259,14 +259,14 @@ export const UserDashboard = () => {
 
   return (
     <>
-    <main className="w-full min-h-screen bg-[#16292C] px-4 md:px-8 py-8 relative overflow-hidden">
+    <main className="w-full min-h-screen bg-[#16292C] px-4 md:px-8 pt-6 pb-28 md:py-8 relative overflow-hidden">
       {/* Ambient brand glow */}
       <div className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(circle_at_8%_0%,rgba(20,184,166,0.16),transparent_42%),radial-gradient(circle_at_92%_100%,rgba(232,162,61,0.08),transparent_50%)]" />
 
       <div className="relative ">
         {/* Header */}
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-8">
-          <div className="flex items-center gap-3.5">
+        <header className="relative flex items-center justify-between gap-3 mb-6 sm:mb-8">
+          <div className="hidden sm:flex items-center gap-3.5 min-w-0">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] text-white flex items-center justify-center font-headline text-lg font-bold shadow-[0_10px_25px_-10px_rgba(20,184,166,0.7)] flex-shrink-0">
               {ownerInitial}
             </div>
@@ -280,7 +280,11 @@ export const UserDashboard = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* <h1 className="font-headline text-xl font-bold text-white sm:hidden">
+            Dashboard
+          </h1> */}
+
+          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
             <Link
               to="/create"
               className="inline-flex items-center gap-2 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-all
@@ -301,11 +305,12 @@ export const UserDashboard = () => {
               Log out
             </button>
           </div>
+
         </header>
 
         {/* Info strip */}
         <section
-          className="mb-6 bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md
+          className="mb-6 hidden bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md sm:grid
                           grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
                           divide-y divide-white/10 sm:divide-y-0
                           sm:divide-x sm:divide-white/10"
@@ -360,67 +365,62 @@ export const UserDashboard = () => {
         )}
 
         {/* Referral — kept bold brand gradient */}
-        <section
-          className="mb-6 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden
-                            bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_60%,#b94630_100%)]
-                            shadow-[0_20px_45px_-20px_rgba(20,184,166,0.55)]"
-        >
-          <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[20px] border-white/10" />
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-sans text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white/75">
-                Your referral code
-              </p>
-              <p className="font-mono text-lg sm:text-xl font-bold mt-0.5 break-all">
-                {referrals?.referralCode || user?.referralCode}
-              </p>
-              <p className="font-sans text-xs text-white/80 mt-1">
-                Share it with a new owner. You earn ₹100 after their listing is
-                created.
-              </p>
-            </div>
+     <section className="relative mb-6 overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_60%,#b94630_100%)] p-4 text-white shadow-[0_20px_45px_-20px_rgba(20,184,166,0.55)]">
+  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full border-[16px] border-white/10" />
 
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-shrink-0">
-              <button
-                onClick={copyReferralCode}
-                className="inline-flex items-center justify-center gap-2 bg-white text-[#0f766e] font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/90 w-full sm:w-auto transition-colors"
-              >
-                <Copy className="w-4 h-4" /> Copy code
-              </button>
-              <button
-                onClick={handleRedeem}
-                disabled={loading}
-                className="inline-flex items-center justify-center gap-2 border border-white/50 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transition-colors"
-              >
-                <WalletCards className="w-4 h-4" /> Redeem
-              </button>
-            </div>
-          </div>
+  {/* Top row: code + actions */}
+  <div className="relative flex items-center justify-between gap-3">
+    <div className="min-w-0 flex-1">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">
+        Referral code
+      </p>
+      <p className="mt-0.5 break-all font-mono text-base font-bold leading-tight sm:text-lg">
+        {referrals?.referralCode || user?.referralCode}
+      </p>
+    </div>
 
-          <div className="relative grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/20">
-            <div>
-              <p className="font-sans text-[10px] sm:text-xs text-white/75">
-                Referrals
-              </p>
-              <p className="font-headline text-xl sm:text-2xl font-bold">
-                {referrals?.referralCount || 0}
-              </p>
-            </div>
-            <div>
-              <p className="font-sans text-[10px] sm:text-xs text-white/75">
-                Available commission
-              </p>
-              <p className="font-headline text-xl sm:text-2xl font-bold">
-                ₹{referrals?.referralEarnings || 0}
-              </p>
-            </div>
-          </div>
-          {referrals?.pendingRedemption && (
-            <p className="relative mt-3 rounded-lg border border-white/20 bg-black/10 px-3 py-2 text-xs text-white/85">
-              ₹{referrals.pendingRedemption.amount} redemption request pending review.
-            </p>
-          )}
-        </section>
+    <div className="flex flex-shrink-0 items-center gap-1.5">
+      <button
+        onClick={copyReferralCode}
+        aria-label="Copy referral code"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#0f766e] transition-colors hover:bg-white/90 active:scale-95 sm:h-8 sm:w-8"
+      >
+        <Copy className="h-4 w-4" />
+      </button>
+      <button
+        onClick={handleRedeem}
+        disabled={loading}
+        aria-label="Redeem commission"
+        className="flex h-9 items-center gap-1.5 rounded-lg border border-white/50 px-3 text-xs font-bold transition-colors hover:bg-white/10 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8"
+      >
+        <WalletCards className="h-3.5 w-3.5" />
+        Redeem
+      </button>
+    </div>
+  </div>
+
+  {/* Stats row */}
+  <div className="relative mt-3 grid grid-cols-2 gap-2 border-t border-white/20 pt-2.5">
+    <div className="flex items-baseline justify-between gap-2">
+      <span className="text-[11px] text-white/70">Referrals</span>
+      <span className="font-headline text-base font-bold leading-none">
+        {referrals?.referralCount || 0}
+      </span>
+    </div>
+    <div className="flex items-baseline justify-between gap-2">
+      <span className="text-[11px] text-white/70">Earned</span>
+      <span className="font-headline text-base font-bold leading-none">
+        ₹{referrals?.referralEarnings || 0}
+      </span>
+    </div>
+  </div>
+
+  {referrals?.pendingRedemption && (
+    <p className="relative mt-2 rounded-md border border-white/20 bg-black/10 px-2.5 py-1.5 text-[11px] text-white/85">
+      ₹{referrals.pendingRedemption.amount} redemption pending review.
+    </p>
+  )}
+</section>
 
         {loading ? (
           <p className="py-12 text-center text-white/60">
@@ -449,108 +449,182 @@ export const UserDashboard = () => {
             </Link>
           </section>
         ) : (
-          <section className="space-y-4">
-            {businesses.map((business) => (
-              <article
-                key={business.slug}
-                className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row gap-5 md:items-center backdrop-blur-md shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] hover:border-[#14b8a6]/40 hover:bg-white/[0.06] transition-all"
+<section className="space-y-3 sm:space-y-4">
+  {businesses.map((business) => {
+    const id = business._id || business.id;
+    const isPending = business.status === "pending_payment";
+    const isPaying = payingBusinessId === id;
+    const img =
+      business.image ||
+      business.coverImage ||
+      (Array.isArray(business.gallery) && business.gallery[0]);
+
+    return (
+      <article
+        key={business.slug || id}
+        className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md transition-all hover:border-[#14b8a6]/40 hover:bg-white/[0.06] sm:p-4"
+      >
+        {/* Main row */}
+        <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+          {/* Thumbnail */}
+          <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.05] sm:aspect-[16/9] sm:h-auto sm:w-40 sm:rounded-xl">
+            {img ? (
+              <img
+                src={img}
+                alt={business.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[#14b8a6]/10 text-lg font-bold text-[#5eead4] sm:text-2xl">
+                {business.name.charAt(0)} 
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="min-w-0 truncate font-headline text-sm font-bold text-white sm:text-lg">
+                {business.name}
+              </h2>
+              <span
+                className={`flex-shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold capitalize leading-none sm:px-2 sm:py-1 sm:text-[10px] ${
+                  isPending
+                    ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
+                    : "border-[#14b8a6]/30 bg-[#14b8a6]/15 text-[#5eead4]"
+                }`}
               >
-                <div className="w-full md:w-48 aspect-[16/9] rounded-xl overflow-hidden bg-white/[0.05] border border-white/10 flex-shrink-0">
-                  {business.image || business.coverImage || (Array.isArray(business.gallery) && business.gallery[0]) ? (
-                    <img
-                      src={business.image || business.coverImage || business.gallery[0]}
-                      alt={business.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#5eead4] bg-[#14b8a6]/10">
-                      {business.name.charAt(0)}
-                    </div>
-                  )}
-                </div>
+                {isPending ? "Pending" : business.status || "Active"}
+              </span>
+            </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h2 className="font-headline text-xl font-bold text-white">
-                      {business.name}
-                    </h2>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full border capitalize ${
-                      business.status === "pending_payment"
-                        ? "bg-amber-400/10 text-amber-200 border-amber-400/30"
-                        : "bg-[#14b8a6]/15 text-[#5eead4] border-[#14b8a6]/30"
-                    }`}>
-                      {business.status === "pending_payment"
-                        ? "Payment pending"
-                        : business.status || "active"}
-                    </span>
-                  </div>
-                  <p className="font-sans text-sm text-white/65">
-                    {business.category} · {business.city}
-                  </p>
-                  <p className="font-sans text-xs text-white/45 mt-2 truncate">
-                    {publicUrl(business.slug)}
-                  </p>
-                  {business.status === "pending_payment" && (
-                    <p className="mt-3 flex items-start gap-2 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-3 py-2 text-xs text-amber-100/90">
-                      <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                      This page is not publicly available because payment is pending. Complete payment to publish it.
-                    </p>
-                  )}
-                </div>
+            <p className="mt-0.5 truncate text-xs text-white/60 sm:text-sm">
+              {business.category} · {business.city}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-white/40 sm:text-xs">
+              {publicUrl(business.slug)}
+            </p>
+          </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {business.status === "pending_payment" ? (
-                    <button
-                      onClick={() => handleRetryPayment(business)}
-                      disabled={Boolean(payingBusinessId)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 text-xs font-semibold text-white transition-colors hover:from-[#0d6b64] hover:to-[#0ea5a0] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <CreditCard className="h-3.5 w-3.5" />
-                      {payingBusinessId === (business._id || business.id)
-                        ? "Opening checkout..."
-                        : "Retry payment"}
-                    </button>
-                  ) : (
-                    <Link
-                      to={`/${business.slug}?ownerView=1`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/30 transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> View my page
-                    </Link>
-                  )}
+          {/* Desktop actions */}
+          <div className="hidden flex-shrink-0 items-center gap-1.5 sm:flex">
+            {isPending ? (
+              <button
+                onClick={() => handleRetryPayment(business)}
+                disabled={Boolean(payingBusinessId)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] px-3 py-2 text-xs font-semibold text-white transition-colors hover:from-[#0d6b64] hover:to-[#0ea5a0] disabled:opacity-60"
+              >
+                <CreditCard className="h-3.5 w-3.5" />
+                {isPaying ? "Opening..." : "Pay now"}
+              </button>
+            ) : (
+              <Link
+                to={`/${business.slug}?ownerView=1`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:bg-white/[0.06] hover:text-white"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View
+              </Link>
+            )}
+            <Link
+              to={`/create?edit=${business.slug}`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-amber-400/30 hover:bg-amber-400/10 hover:text-amber-200"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+              Edit
+            </Link>
+            {!isPending && (
+              <button
+                onClick={() => handleShare(business)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 transition-colors hover:border-[#14b8a6]/30 hover:bg-[#14b8a6]/10 hover:text-[#5eead4]"
+              >
+                {navigator.share ? (
+                  <Share2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                Share
+              </button>
+            )}
+            <button
+              onClick={() => handleDelete(business)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-400/30 px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:border-red-400/50 hover:bg-red-500/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </button>
+          </div>
+        </div>
 
-                  <Link
-                    to={`/create?edit=${business.slug}`}
-                    className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-amber-400/10 hover:border-amber-400/30 hover:text-amber-200 transition-colors"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" /> Edit
-                  </Link>
+        {/* Pending note (mobile + desktop) */}
+        {isPending && (
+          <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-2.5 py-1.5 text-[11px] leading-snug text-amber-100/90 sm:mt-3 sm:items-center sm:px-3 sm:py-2 sm:text-xs">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 sm:mt-0" />
+            <span>Payment pending — publish to make this page public.</span>
+          </p>
+        )}
 
-                  {business.status !== "pending_payment" && (
-                    <button
-                      onClick={() => handleShare(business)}
-                      className="inline-flex items-center gap-1.5 border border-white/15 px-3 py-2 rounded-lg text-xs font-semibold text-white/80 hover:bg-[#14b8a6]/10 hover:border-[#14b8a6]/30 hover:text-[#5eead4] transition-colors"
-                    >
-                      {navigator.share ? (
-                        <Share2 className="w-3.5 h-3.5" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}{" "}
-                      Share
-                    </button>
-                  )}
+        {/* Mobile action row */}
+        <div className="mt-2.5 grid grid-cols-4 gap-1.5 border-t border-white/10 pt-2.5 sm:hidden">
+          {isPending ? (
+            <button
+              onClick={() => handleRetryPayment(business)}
+              disabled={Boolean(payingBusinessId)}
+              className="col-span-2 flex min-h-9 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-[#0f766e] to-[#14b8a6] text-[11px] font-semibold text-white transition-opacity active:scale-[0.98] disabled:opacity-60"
+            >
+              <CreditCard className="h-3.5 w-3.5" />
+              {isPaying ? "Opening..." : "Pay now"}
+            </button>
+          ) : (
+            <Link
+              to={`/${business.slug}?ownerView=1`}
+              target="_blank"
+              className="col-span-1 flex min-h-9 flex-col items-center justify-center gap-0.5 rounded-lg border border-white/15 text-[9px] font-semibold text-white/75 active:scale-[0.98] active:bg-white/[0.06]"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View
+            </Link>
+          )}
 
-                  <button
-                    onClick={() => handleDelete(business)}
-                    className="inline-flex items-center gap-1.5 border border-red-400/30 px-3 py-2 rounded-lg text-xs font-semibold text-red-300 hover:bg-red-500/10 hover:border-red-400/50 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                  </button>
-                </div>
-              </article>
-            ))}
-          </section>
+          <Link
+            to={`/create?edit=${business.slug}`}
+            className={`${
+              isPending ? "col-span-1" : "col-span-1"
+            } flex min-h-9 flex-col items-center justify-center gap-0.5 rounded-lg border border-white/15 text-[9px] font-semibold text-white/75 active:scale-[0.98] active:bg-white/[0.06]`}
+          >
+            <Edit3 className="h-3.5 w-3.5" />
+            Edit
+          </Link>
+
+          {!isPending && (
+            <button
+              onClick={() => handleShare(business)}
+              className="col-span-1 flex min-h-9 flex-col items-center justify-center gap-0.5 rounded-lg border border-white/15 text-[9px] font-semibold text-white/75 active:scale-[0.98] active:bg-white/[0.06]"
+            >
+              {navigator.share ? (
+                <Share2 className="h-3.5 w-3.5" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              Share
+            </button>
+          )}
+
+          <button
+            onClick={() => handleDelete(business)}
+            className={`${
+              isPending ? "col-span-1" : "col-span-1"
+            } flex min-h-9 flex-col items-center justify-center gap-0.5 rounded-lg border border-red-400/25 text-[9px] font-semibold text-red-300 active:scale-[0.98] active:bg-red-500/10`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </button>
+        </div>
+      </article>
+    );
+  })}
+</section>
         )}
       </div>
     </main>

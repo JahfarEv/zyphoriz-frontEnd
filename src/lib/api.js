@@ -13,6 +13,7 @@ const getApiBaseUrl = () => {
 const API_URL = getApiBaseUrl();
 const TOKEN_KEY = 'zyphoriz_token';
 const DEFAULT_REQUEST_TIMEOUT_MS = 20000;
+const OTP_REQUEST_TIMEOUT_MS = 45000;
 const BUSINESS_UPLOAD_TIMEOUT_MS = 120000;
 const PAYMENT_REQUEST_TIMEOUT_MS = 60000;
 
@@ -83,7 +84,11 @@ export const api = {
   auth: {
     register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
     login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
-    sendOtp: (body) => request('/auth/send-otp', { method: 'POST', body: JSON.stringify(body) }),
+    sendOtp: (body) => request('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      timeoutMs: OTP_REQUEST_TIMEOUT_MS,
+    }),
     verifyOtp: (body) => request('/auth/verify-otp', { method: 'POST', body: JSON.stringify(body) }),
     resetPassword: (body) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(body) }),
     me: () => request('/auth/me'),

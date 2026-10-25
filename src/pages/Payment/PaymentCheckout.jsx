@@ -443,10 +443,7 @@ export const PaymentCheckout = () => {
         city:
           formData.city,
 
-        location:
-          formData.address
-            ? `${formData.address}, ${formData.city}`
-            : formData.city,
+        location: formData.location,
 
         description:
           formData.description,

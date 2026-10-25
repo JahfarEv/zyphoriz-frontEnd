@@ -83,6 +83,9 @@ export const api = {
   auth: {
     register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
     login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+    sendOtp: (body) => request('/auth/send-otp', { method: 'POST', body: JSON.stringify(body) }),
+    verifyOtp: (body) => request('/auth/verify-otp', { method: 'POST', body: JSON.stringify(body) }),
+    resetPassword: (body) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(body) }),
     me: () => request('/auth/me'),
     logout: () => request('/auth/logout', { method: 'POST' }),
   },

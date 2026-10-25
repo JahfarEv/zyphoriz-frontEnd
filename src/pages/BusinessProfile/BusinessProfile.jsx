@@ -85,7 +85,7 @@ export const BusinessProfile = () => {
           telegram: formData.telegram,
           youtube: formData.youtube,
           video: formData.video,
-          location: `${formData.address}, ${formData.city}`,
+          location: formData.location,
           city: formData.city,
           description: formData.description,
           descriptionSections: formData.descriptionSections,
@@ -107,6 +107,8 @@ export const BusinessProfile = () => {
   const [error, setError] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isOwnerView, setIsOwnerView] = useState(false);
+
+  
 
   useEffect(() => {
     if (contextBusiness) {
@@ -254,10 +256,47 @@ export const BusinessProfile = () => {
     `${name} ${city || ""}`.trim(),
   )}`;
 
-  const mapQuery = location || [address, city].filter(Boolean).join(", ");
+  const addressQuery = [address, city].filter(Boolean).join(", ");
+  const locationIsUrl = /^https?:\/\//i.test(location || "");
+  let mapQuery = locationIsUrl ? "" : location || addressQuery;
+  if (locationIsUrl) {
+    try {
+      const mapUrl = new URL(location);
+      const mapUrlText = mapUrl.href;
+      const atCoordinates = mapUrlText.match(
+        /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+      );
+      const latitudeLongitude = mapUrlText.match(
+        /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+      );
+      const longitudeLatitude = mapUrlText.match(
+        /!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)/,
+      );
+      const coordinates =
+        atCoordinates?.slice(1).join(",") ||
+        latitudeLongitude?.slice(1).join(",") ||
+        (longitudeLatitude
+          ? `${longitudeLatitude[2]},${longitudeLatitude[1]}`
+          : "");
+      mapQuery =
+        coordinates ||
+        mapUrl.searchParams.get("query") ||
+        mapUrl.searchParams.get("q") ||
+        mapUrl.pathname.match(/\/maps\/place\/([^/]+)/i)?.[1]?.replace(/\+/g, " ") ||
+        mapUrl.pathname.match(/\/maps\/search\/([^/]+)/i)?.[1]?.replace(/\+/g, " ") ||
+        addressQuery;
+    } catch {
+      mapQuery = addressQuery;
+    }
+  }
   const mapEmbedUrl = mapQuery
     ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
     : "";
+  const mapOpenUrl = locationIsUrl
+    ? location
+    : mapQuery
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+      : "";
 
   const allPhotos = (gallery.length > 0 ? gallery : photos).slice(0, 6);
   const hoursList = normaliseHours(
@@ -375,7 +414,7 @@ export const BusinessProfile = () => {
         />
 
         {/* ---------- COVER BANNER ---------- */}
-        <section className="w-full h-56 md:h-80 relative overflow-hidden">
+        <section className="w-full h-64 md:h-96 relative overflow-hidden">
           {coverImage || image ? (
             <img
               src={coverImage || image}
@@ -412,7 +451,7 @@ export const BusinessProfile = () => {
         </section>
 
         {/* ---------- MAIN CONTAINER ---------- */}
-        <div className="w-full  px-4 md:px-6 relative -mt-12 md:-mt-16">
+        <div className="w-full  px-4 md:px-6 relative -mt-12 md:-mt-10">
           {/* ----- HEADER CARD ----- */}
           <div
             className="rounded-3xl shadow-[0_18px_50px_rgba(0,0,0,0.45)] p-5 md:p-7 flex flex-col md:flex-row gap-5 items-start md:items-center mb-8 border"
@@ -475,36 +514,6 @@ export const BusinessProfile = () => {
                 </p>
               )}
 
-              {/* {rating > 0 && (
-                <div className="flex items-center gap-1.5 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-3.5 h-3.5"
-                      style={{
-                        color:
-                          i < Math.round(rating)
-                            ? theme.highlight
-                            : "#ffffff30",
-                        fill:
-                          i < Math.round(rating)
-                            ? theme.highlight
-                            : "transparent",
-                      }}
-                    />
-                  ))}
-                  <span className="font-sans text-xs opacity-60">
-                    {Number(rating).toFixed(1)} ({reviewTotal} reviews)
-                  </span>
-                </div>
-              )}
-
-              {(address || city || location) && (
-                <p className="font-sans text-xs opacity-60 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {[address, city].filter(Boolean).join(", ") || location}
-                </p>
-              )} */}
             </div>
 
             {/* Action Buttons */}
@@ -733,7 +742,7 @@ export const BusinessProfile = () => {
                   <div className="flex items-start gap-3 text-sm">
                     <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5 opacity-60" />
                     <span className="font-sans opacity-70">
-                      {[address, city].filter(Boolean).join(", ") || location}
+                      {addressQuery || location}
                     </span>
                   </div>
                 )}
@@ -874,7 +883,7 @@ export const BusinessProfile = () => {
               </div>
 
               {/* Map */}
-              {mapEmbedUrl && (
+              {(mapEmbedUrl || mapOpenUrl) && (
                 <div
                   className="rounded-2xl p-5 shadow-sm border"
                   style={{
@@ -890,10 +899,10 @@ export const BusinessProfile = () => {
                       />
                       Location
                     </h3>
+
+                    
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        mapQuery,
-                      )}`}
+                      href={mapOpenUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs font-semibold hover:underline"
@@ -902,15 +911,23 @@ export const BusinessProfile = () => {
                       Open map
                     </a>
                   </div>
-                  <div className="aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                    <iframe
-                      title={`${name} location map`}
-                      src={mapEmbedUrl}
-                      className="w-full h-full border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                  </div>
+                  {mapEmbedUrl && (
+                    <a
+                      href={mapOpenUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${name} location in Google Maps`}
+                      className="block aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-white/5"
+                    >
+                      <iframe
+                        title={`${name} location map`}
+                        src={mapEmbedUrl}
+                        className="pointer-events-none w-full h-full border-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </a>
+                  )}
                 </div>
               )}
 

@@ -1502,9 +1502,7 @@ export const CreateBusiness = () => {
           video: form.video,
           address: form.address,
           city: form.city,
-          location: form.address
-            ? `${form.address}, ${form.city}`
-            : form.city,
+          location: form.location,
           description: form.descriptionSections[0].description,
           descriptionSections: form.descriptionSections,
           additionalPhones: form.additionalPhones.filter((phone) => phone.trim()),

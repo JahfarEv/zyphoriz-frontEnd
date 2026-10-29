@@ -112,7 +112,21 @@ export const api = {
     }),
     remove: (id) => request(`/businesses/${id}`, { method: 'DELETE' }),
   },
-  categories: { list: (params = '?limit=200') => request(`/categories${params}`) },
+  categories: {
+    list: (params = '?limit=200') => request(`/categories${params}`),
+    listAll: async () => {
+      const firstPage = await request('/categories?limit=200');
+      const categories = firstPage.categories || [];
+      const pageCount = Number(firstPage.pagination?.pages) || 1;
+
+      for (let page = 2; page <= pageCount; page += 1) {
+        const result = await request(`/categories?page=${page}&limit=200`);
+        categories.push(...(result.categories || []));
+      }
+
+      return categories;
+    },
+  },
   payments: {
     price: () => request('/payments/price'),
     createOrder: (body) => request('/payments/order', {

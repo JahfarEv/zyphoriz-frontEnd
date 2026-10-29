@@ -4,6 +4,9 @@ import { ArrowLeft, ArrowRight, LockKeyhole, Mail, Phone, ShieldCheck } from 'lu
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 
+const adminAppUrl =
+  import.meta.env.VITE_ADMIN_URL || (import.meta.env.DEV ? 'http://localhost:5174' : '/admin');
+
 export const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -307,11 +310,14 @@ export const Auth = () => {
         )}
 
         {mode === 'login' && (
-          <p className="text-right font-sans text-sm text-on-surface-variant mt-4">
+          <div className="mt-4 flex items-center justify-between gap-3 font-sans text-sm text-on-surface-variant">
+            <a href={adminAppUrl} className="text-primary font-semibold hover:underline">
+              Admin sign in
+            </a>
             <button type="button" onClick={startPasswordRecovery} className="text-primary font-semibold hover:underline">
               Forgot password?
             </button>
-          </p>
+          </div>
         )}
 
         {mode !== 'forgot' && <p className="text-center font-sans text-sm text-on-surface-variant mt-5">

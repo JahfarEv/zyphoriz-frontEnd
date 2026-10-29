@@ -1026,6 +1026,7 @@ import { useRegistration } from "../../context/RegistrationContext";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { showError } from "../../lib/alerts";
+import { compressImage } from "../../utils/compressImage";
 import {
   DEFAULT_TEMPLATE,
   TEMPLATE_OPTIONS,
@@ -1182,6 +1183,7 @@ export const CreateBusiness = () => {
   }));
 
   const [categories, setCategories] = useState([]);
+  const [categoryLoadError, setCategoryLoadError] = useState("");
   const [paymentPrice, setPaymentPrice] = useState(null);
   const [paymentPriceError, setPaymentPriceError] = useState("");
   const [termsOpen, setTermsOpen] = useState(false);
@@ -1194,9 +1196,11 @@ export const CreateBusiness = () => {
 
   useEffect(() => {
     api.categories
-      .list()
-      .then(({ categories: items }) => setCategories(items || []))
-      .catch(() => {});
+      .listAll()
+      .then((items) => setCategories(items))
+      .catch((error) => {
+        setCategoryLoadError(error.message || "Unable to load categories.");
+      });
     if (!editSlug) {
       setLoadingEdit(false);
       return undefined;
@@ -1453,10 +1457,13 @@ export const CreateBusiness = () => {
         Object.entries(fields).forEach(([key, value]) =>
           payload.append(key, value || ""),
         );
-        if (form.bannerFile) payload.append("banner", form.bannerFile);
-        (form.galleryFiles || []).forEach((file) =>
-          payload.append("gallery", file),
+        if (form.bannerFile) {
+          payload.append("banner", await compressImage(form.bannerFile));
+        }
+        const compressedGallery = await Promise.all(
+          (form.galleryFiles || []).map(compressImage),
         );
+        compressedGallery.forEach((file) => payload.append("gallery", file));
         await api.businesses.update(businessToEdit._id, payload);
         navigate("/dashboard");
         return;
@@ -1522,8 +1529,13 @@ export const CreateBusiness = () => {
             );
           }
         });
-        if (form.bannerFile) payload.append("banner", form.bannerFile);
-        (form.galleryFiles || []).forEach((file) => payload.append("gallery", file));
+        if (form.bannerFile) {
+          payload.append("banner", await compressImage(form.bannerFile));
+        }
+        const compressedGallery = await Promise.all(
+          (form.galleryFiles || []).map(compressImage),
+        );
+        compressedGallery.forEach((file) => payload.append("gallery", file));
 
         ({ business } = await api.businesses.create(payload));
         pendingBusinessRef.current = business;
@@ -1905,7 +1917,11 @@ export const CreateBusiness = () => {
                   </div>
                 </Field>
 
-                <Field label="Category" optional error={errors.category}>
+                <Field
+                  label="Category"
+                  optional
+                  error={errors.category || categoryLoadError}
+                >
                   <div className="relative">
                     <Tag className={ICON} />
                     <select

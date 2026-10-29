@@ -279,6 +279,7 @@ import {
 import { useRegistration } from '../../context/RegistrationContext';
 import { api } from '../../lib/api';
 import { showError } from '../../lib/alerts';
+import { compressImage } from '../../utils/compressImage';
 
 export const PaymentCheckout = () => {
   const navigate = useNavigate();
@@ -500,18 +501,14 @@ export const PaymentCheckout = () => {
       if (formData.bannerFile) {
         payload.append(
           'banner',
-          formData.bannerFile
+          await compressImage(formData.bannerFile)
         );
       }
 
-      (formData.galleryFiles || []).forEach(
-        (file) => {
-          payload.append(
-            'gallery',
-            file
-          );
-        }
+      const compressedGallery = await Promise.all(
+        (formData.galleryFiles || []).map(compressImage)
       );
+      compressedGallery.forEach((file) => payload.append('gallery', file));
 
       let business = pendingBusinessRef.current;
       if (!business) {

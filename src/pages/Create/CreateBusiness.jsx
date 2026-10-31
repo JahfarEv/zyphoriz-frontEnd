@@ -2486,7 +2486,7 @@ export const CreateBusiness = () => {
                       ? `Secure payment · ${new Intl.NumberFormat("en-IN", {
                           style: "currency",
                           currency: paymentPrice.currency,
-                        }).format(paymentPrice.totalAmount)} including GST · Valid for one year`
+                        }).format(paymentPrice.totalAmount)} including GST ·`
                       : paymentPriceError
                         ? paymentPriceError
                         : "Loading price…"}
